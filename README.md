@@ -1,0 +1,2 @@
+# clockify-rs
+Clockify CLI 
