@@ -59,8 +59,29 @@ pub enum EndpointError {
 }
 
 pub trait EndPoint {
-    fn list(parameters: Option<EndpointParameters>) -> Result<Vec<Self>, EndpointError> where Self: Sized;
+    fn url() -> String;
+    fn add_params(url: String, params: EndpointParameters) -> String {
+        let mut output = String::new(); 
+        for (key, value) in params.into_iter() {
+            output = format!("&{}={}", key, value.to_string()); 
+        }
+        output
+    }
+    fn list(&self, params: Option<EndpointParameters>) -> Result<Self, EndpointError> {
+        let url : String; 
+        if let Some(p) = params {
+            let url = add_params(self.url(), p); 
+        } else {
+            let url = self.url(); 
+        }
+        let struct = reqwest::get(url)
+            .await?
+            .json::<Self>()
+            .await?;
+        Ok(struct_list)
+    }
     fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
     fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
     fn delete(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
 }
+
