@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
+use reqwest::blocking::RequestBuilder; 
 
 use crate::clockify::{Clockify, BASE_URL}; 
 
@@ -80,7 +81,9 @@ impl From<reqwest::Error> for EndpointError {
 }
 
 pub trait EndPoint {
+
     fn endpoint(clockify: &Clockify) -> String;
+
     fn add_params(params: EndpointParameters) -> String {
         let mut output = String::new(); 
         for (key, value) in params.into_iter() {
@@ -88,18 +91,27 @@ pub trait EndPoint {
         }
         output
     }
-    #[tokio::main]
-    async fn list(&self, params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>  
-        where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
+
+    fn format_url(params: Option<EndpointParameters>, clockify: &Clockify) -> String {
         let mut url = format!("{}{}", BASE_URL, Self::endpoint(clockify)); 
         if let Some(p) = params {
             url = format!("{}{}", url, Self::add_params(p)); 
         }
-        let struct_response = reqwest::get(url)
-            .await?
-            .json::<Self>()
-            .await?;
-        Ok(struct_response)
+        url
+    }
+
+    fn set_api_key(request: RequestBuilder, clockify: &Clockify) -> RequestBuilder {
+        request.header("X-API-KEY", clockify.api_key.clone())
+    }
+
+    fn list(params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>  
+        where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
+        let url : String = Self::format_url(params, clockify); 
+        let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
+        let response = request
+            .send()?
+            .json::<Self>()?; 
+        Ok(response)
     }
     // fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
     // fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
