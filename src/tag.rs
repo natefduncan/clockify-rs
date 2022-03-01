@@ -4,11 +4,11 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Tag {
-    id: String,
-    name: String,
-    workspace_id: String,
-    archived: String
+pub struct Tag {
+    pub id: String,
+    pub name: String,
+    pub workspace_id: String,
+    pub archived: String
 }
 
 impl EndPoint for Tag {
