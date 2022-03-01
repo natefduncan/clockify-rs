@@ -55,7 +55,26 @@ impl From<String> for ParameterValue {
 pub enum EndpointError {
     Unauthorized, // 401 
     Forbidden, // 403
-    NotFound // 404
+    NotFound, // 404
+    Unknown(Option<u16>)
+}
+
+impl From<reqwest::Error> for EndpointError {
+    fn from(error: reqwest::Error) -> EndpointError {
+        match error.status() {
+            Some(s) => {
+                match s.as_u16() {
+                    401 => EndpointError::Unauthorized, 
+                    403 => EndpointError::Forbidden, 
+                    404 => EndpointError::NotFound, 
+                    _ => EndpointError::Unknown(Some(s.as_u16()))
+                }
+            }, 
+            None => {
+                EndpointError::Unknown(None)
+            }
+        }
+    }
 }
 
 pub trait EndPoint {
@@ -67,18 +86,20 @@ pub trait EndPoint {
         }
         output
     }
-    fn list(&self, params: Option<EndpointParameters>) -> Result<Self, EndpointError> {
-        let url : String; 
+    #[tokio::main]
+    async fn list(&self, params: Option<EndpointParameters>) -> Result<Self, EndpointError>  
+        where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
+        let mut url = String::new(); 
         if let Some(p) = params {
-            let url = add_params(self.url(), p); 
+            url = Self::add_params(Self::url(), p); 
         } else {
-            let url = self.url(); 
+            url = Self::url(); 
         }
-        let struct = reqwest::get(url)
+        let struct_response = reqwest::get(url)
             .await?
             .json::<Self>()
             .await?;
-        Ok(struct_list)
+        Ok(struct_response)
     }
     fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
     fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
