@@ -59,7 +59,7 @@ pub enum EndpointError {
     Unauthorized, // 401 
     Forbidden, // 403
     NotFound, // 404
-    Unknown(Option<u16>)
+    Unknown(String)
 }
 
 impl From<reqwest::Error> for EndpointError {
@@ -70,11 +70,11 @@ impl From<reqwest::Error> for EndpointError {
                     401 => EndpointError::Unauthorized, 
                     403 => EndpointError::Forbidden, 
                     404 => EndpointError::NotFound, 
-                    _ => EndpointError::Unknown(Some(s.as_u16()))
+                    _ => EndpointError::Unknown(format!("{:?}", error))
                 }
             }, 
             None => {
-                EndpointError::Unknown(None)
+                EndpointError::Unknown(format!("{:?}", error))
             }
         }
     }
@@ -104,13 +104,13 @@ pub trait EndPoint {
         request.header("X-API-KEY", clockify.api_key.clone())
     }
 
-    fn list(params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>  
+    fn list(params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Vec<Self>, EndpointError>  
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
         let url : String = Self::format_url(params, clockify); 
         let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
         let response = request
             .send()?
-            .json::<Self>()?; 
+            .json::<Vec<Self>>()?; 
         Ok(response)
     }
     // fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
