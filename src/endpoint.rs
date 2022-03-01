@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
+use crate::clockify::{Clockify, BASE_URL}; 
+
 pub type EndpointParameters = HashMap<String, ParameterValue>;
 
 #[derive(Debug, Clone)]
@@ -78,8 +80,8 @@ impl From<reqwest::Error> for EndpointError {
 }
 
 pub trait EndPoint {
-    fn url() -> String;
-    fn add_params(url: String, params: EndpointParameters) -> String {
+    fn endpoint(clockify: &Clockify) -> String;
+    fn add_params(params: EndpointParameters) -> String {
         let mut output = String::new(); 
         for (key, value) in params.into_iter() {
             output = format!("&{}={}", key, value.to_string()); 
@@ -87,13 +89,11 @@ pub trait EndPoint {
         output
     }
     #[tokio::main]
-    async fn list(&self, params: Option<EndpointParameters>) -> Result<Self, EndpointError>  
+    async fn list(&self, params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>  
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
-        let mut url = String::new(); 
+        let mut url = format!("{}{}", BASE_URL, Self::endpoint(clockify)); 
         if let Some(p) = params {
-            url = Self::add_params(Self::url(), p); 
-        } else {
-            url = Self::url(); 
+            url = format!("{}{}", url, Self::add_params(p)); 
         }
         let struct_response = reqwest::get(url)
             .await?
@@ -101,8 +101,8 @@ pub trait EndPoint {
             .await?;
         Ok(struct_response)
     }
-    fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
-    fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
-    fn delete(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
+    // fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
+    // fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
+    // fn delete(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
 }
 
