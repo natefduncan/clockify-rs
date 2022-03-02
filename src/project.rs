@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::clockify::Clockify; 
+use crate::clockify::Config; 
 use crate::endpoint::{EndPoint, EndpointError}; 
 use serde::{Serialize, Deserialize};
 
@@ -105,7 +105,7 @@ impl fmt::Display for Project {
 }
 
 impl EndPoint for Project {
-    fn endpoint(clockify: &Clockify) -> String {
-        format!("/workspaces/{}/projects", clockify.workspace_id)
+    fn endpoint(config: &Config) -> String {
+        format!("/workspaces/{}/projects", config.workspace_id.as_ref().unwrap().clone())
     }
 }

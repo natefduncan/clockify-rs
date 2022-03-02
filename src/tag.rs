@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::clockify::Clockify; 
+use crate::clockify::Config; 
 use crate::endpoint::{EndPoint, EndpointError}; 
 use serde::{Serialize, Deserialize};
 
@@ -31,7 +31,7 @@ impl fmt::Display for Tag {
 }
 
 impl EndPoint for Tag {
-    fn endpoint(clockify: &Clockify) -> String {
-        format!("/workspaces/{}/tags", clockify.workspace_id)
+    fn endpoint(config: &Config) -> String {
+        format!("/workspaces/{}/tags", config.workspace_id.as_ref().unwrap().clone())
     }
 }

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::fmt;
-use reqwest::blocking::RequestBuilder; 
+use reqwest::blocking::{Client, RequestBuilder}; 
 
 use serde::{Serialize, Deserialize}; 
-use crate::clockify::{Clockify, BASE_URL}; 
+use crate::clockify::{Config}; 
 
 type EndpointParameters = HashMap<String, ParameterValue>;
 
@@ -83,7 +83,7 @@ impl From<reqwest::Error> for EndpointError {
 
 pub trait EndPoint {
 
-    fn endpoint(clockify: &Clockify) -> String;
+    fn endpoint(config: &Config) -> String;
 
     fn add_params(params: EndpointParameters) -> String {
         let mut output = String::new(); 
@@ -93,8 +93,8 @@ pub trait EndPoint {
         output
     }
 
-    fn format_url(id: Option<&str>, params: Option<EndpointParameters>, clockify: &Clockify) -> String {
-        let mut url = format!("{}{}", BASE_URL, Self::endpoint(clockify)); 
+    fn format_url(id: Option<&str>, params: Option<EndpointParameters>, config: &Config) -> String {
+        let mut url = format!("{}{}", config.base_url, Self::endpoint(config)); 
         if let Some(i) = id {
             url = format!("{}/{}", url, i); 
         }
@@ -104,24 +104,24 @@ pub trait EndPoint {
         url
     }
 
-    fn set_api_key(request: RequestBuilder, clockify: &Clockify) -> RequestBuilder {
-        request.header("X-API-KEY", clockify.api_key.clone())
+    fn set_api_key(request: RequestBuilder, config: &Config) -> RequestBuilder {
+        request.header("X-API-KEY", config.api_key.as_ref().unwrap().clone())
     }
 
-    fn list(params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Vec<Self>, EndpointError>  
+    fn list(client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Vec<Self>, EndpointError>  
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
-        let url : String = Self::format_url(None, params, clockify); 
-        let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
+        let url : String = Self::format_url(None, params, config); 
+        let request : RequestBuilder = Self::set_api_key(client.get(url), config);
         let response = request
             .send()?
             .json::<Vec<Self>>()?; 
         Ok(response)
     }
 
-    fn get(id: &str, params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>
+    fn get(client: &Client, config: &Config, id: &str, params: Option<EndpointParameters>) -> Result<Self, EndpointError>
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
-        let url : String = Self::format_url(Some(id), params, clockify); 
-        let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
+        let url : String = Self::format_url(Some(id), params, config); 
+        let request : RequestBuilder = Self::set_api_key(client.get(url), config);
         let response = request
             .send()?
             .json::<Self>()?; 
@@ -129,10 +129,10 @@ pub trait EndPoint {
 
     }
     
-    fn add(&self, clockify: &Clockify) -> Result<(), EndpointError> 
+    fn add(&self, client: &Client, config: &Config) -> Result<(), EndpointError> 
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de>, Self: Serialize {
-        let url : String = Self::format_url(None, None, clockify);
-        let request : RequestBuilder = Self::set_api_key(clockify.client.post(url), clockify);
+        let url : String = Self::format_url(None, None, config);
+        let request : RequestBuilder = Self::set_api_key(client.post(url), config);
         let response = request
             .json(self)
             .send()?
