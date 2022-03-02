@@ -139,7 +139,5 @@ pub trait EndPoint {
             .json::<Self>()?;
         Ok(())
     }
-    // fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
-    // fn delete(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
 }
 
