@@ -4,7 +4,7 @@ use reqwest::blocking::RequestBuilder;
 
 use crate::clockify::{Clockify, BASE_URL}; 
 
-pub type EndpointParameters = HashMap<String, ParameterValue>;
+type EndpointParameters = HashMap<String, ParameterValue>;
 
 #[derive(Debug, Clone)]
 pub enum ParameterValue {
@@ -92,7 +92,7 @@ pub trait EndPoint {
         output
     }
 
-    fn format_url(id: Option<u32>, params: Option<EndpointParameters>, clockify: &Clockify) -> String {
+    fn format_url(id: Option<&str>, params: Option<EndpointParameters>, clockify: &Clockify) -> String {
         let mut url = format!("{}{}", BASE_URL, Self::endpoint(clockify)); 
         if let Some(i) = id {
             url = format!("{}/{}", url, i); 
@@ -117,7 +117,7 @@ pub trait EndPoint {
         Ok(response)
     }
 
-    fn get(id: u32, params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>
+    fn get(id: &str, params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
         let url : String = Self::format_url(Some(id), params, clockify); 
         let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
