@@ -14,7 +14,6 @@ use crate::project::Project;
 fn main() -> Result<(), ConfyError> {
     let client = Client::new();
     let mut cfg : Config = confy::load("clockify")?;
-    println!("{:?}", cfg); 
     // API Key
     if cfg.api_key.is_none() {
         let mut s = String::new();
