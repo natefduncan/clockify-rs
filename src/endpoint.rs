@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use reqwest::blocking::RequestBuilder; 
 
+use serde::{Serialize, Deserialize}; 
 use crate::clockify::{Clockify, BASE_URL}; 
 
 type EndpointParameters = HashMap<String, ParameterValue>;
@@ -126,6 +127,17 @@ pub trait EndPoint {
             .json::<Self>()?; 
         Ok(response)
 
+    }
+    
+    fn add(&self, clockify: &Clockify) -> Result<(), EndpointError> 
+        where Self: Sized, for <'de> Self: serde::de::Deserialize<'de>, Self: Serialize {
+        let url : String = Self::format_url(None, None, clockify);
+        let request : RequestBuilder = Self::set_api_key(clockify.client.post(url), clockify);
+        let response = request
+            .json(self)
+            .send()?
+            .json::<Self>()?;
+        Ok(())
     }
     // fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
     // fn delete(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
