@@ -92,8 +92,11 @@ pub trait EndPoint {
         output
     }
 
-    fn format_url(params: Option<EndpointParameters>, clockify: &Clockify) -> String {
+    fn format_url(id: Option<u32>, params: Option<EndpointParameters>, clockify: &Clockify) -> String {
         let mut url = format!("{}{}", BASE_URL, Self::endpoint(clockify)); 
+        if let Some(i) = id {
+            url = format!("{}/{}", url, i); 
+        }
         if let Some(p) = params {
             url = format!("{}{}", url, Self::add_params(p)); 
         }
@@ -106,14 +109,24 @@ pub trait EndPoint {
 
     fn list(params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Vec<Self>, EndpointError>  
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
-        let url : String = Self::format_url(params, clockify); 
+        let url : String = Self::format_url(None, params, clockify); 
         let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
         let response = request
             .send()?
             .json::<Vec<Self>>()?; 
         Ok(response)
     }
-    // fn get(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized; 
+
+    fn get(id: u32, params: Option<EndpointParameters>, clockify: &Clockify) -> Result<Self, EndpointError>
+        where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
+        let url : String = Self::format_url(Some(id), params, clockify); 
+        let request : RequestBuilder = Self::set_api_key(clockify.client.get(url), clockify);
+        let response = request
+            .send()?
+            .json::<Self>()?; 
+        Ok(response)
+
+    }
     // fn update(&self, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
     // fn delete(id: u32, parameters: Option<EndpointParameters>) -> Result<Self, EndpointError> where Self: Sized;
 }
