@@ -1,5 +1,8 @@
 pub mod tag; 
 pub mod project; 
+pub mod common; 
+pub mod task;
+pub mod time_entry; 
 
 use std::collections::HashMap;
 use std::fmt;
