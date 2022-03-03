@@ -1,6 +1,10 @@
 use std::fmt;
 use crate::clockify::Config; 
-use crate::api::{EndPoint, EndpointError}; 
+use crate::api::{
+    EndPoint, EndpointError,
+    task::Task,
+    common::Rate,
+}; 
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -8,7 +12,7 @@ use serde::{Serialize, Deserialize};
 pub struct Project {
     pub id: Option<String>,
     pub name: String,
-    pub hourly_rate: Option<HourlyRate>,
+    pub hourly_rate: Option<Rate>,
     pub client_id: Option<String>, 
     pub client: Option<String>, 
     pub workspace_id: Option<String>,
@@ -31,13 +35,6 @@ pub struct Project {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct HourlyRate {
-    pub amount: u32, 
-    pub currency: String, 
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct Membership {
     pub user_id: String, 
     pub hourly_rate: Option<String>, 
@@ -52,22 +49,6 @@ pub struct Membership {
 pub struct Estimate {
     pub estimate: String, 
     pub r#type: String
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct Task {
-    pub id: String, 
-    pub name: String,
-    pub project_id: String, 
-    pub assignee_ids: Vec<String>, 
-    pub assignee_id: String, 
-    pub user_group_ids: Vec<String>, 
-    pub estimate: String, 
-    pub status: String, 
-    pub duration: Option<String>, 
-    pub billable: bool, 
-    pub hourly_rate: Option<String>, 
-    pub cost_rate: Option<String>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
