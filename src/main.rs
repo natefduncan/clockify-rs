@@ -1,15 +1,15 @@
 mod clockify;
-mod endpoint; 
-mod project; 
-mod tag;
+mod api; 
 
 use reqwest::blocking::Client; 
 use confy::{load, store, ConfyError};
 use std::io::{stdin, stdout, Write}; 
-use crate::endpoint::EndPoint; 
 use crate::clockify::Config;
-use crate::tag::Tag; 
-use crate::project::Project; 
+use crate::api::{
+    EndPoint,
+    tag::Tag,
+    project::Project
+}; 
 
 fn main() -> Result<(), ConfyError> {
     let client = Client::new();

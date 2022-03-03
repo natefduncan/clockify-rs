@@ -1,6 +1,6 @@
 use std::fmt;
 use crate::clockify::Config; 
-use crate::endpoint::{EndPoint, EndpointError}; 
+use crate::api::{EndPoint, EndpointError}; 
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

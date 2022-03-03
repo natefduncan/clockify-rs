@@ -1,3 +1,6 @@
+pub mod tag; 
+pub mod project; 
+
 use std::collections::HashMap;
 use std::fmt;
 use reqwest::blocking::{Client, RequestBuilder}; 
