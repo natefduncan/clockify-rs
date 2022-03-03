@@ -1,6 +1,6 @@
 use std::fmt;
 use crate::clockify::Config; 
-use crate::api::{EndPoint, EndpointError}; 
+use crate::api::{EndPoint}; 
 use serde::{Serialize, Deserialize};
 
 // Name is the only required field to create a tag.

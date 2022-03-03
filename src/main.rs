@@ -8,7 +8,8 @@ use crate::clockify::Config;
 use crate::api::{
     EndPoint,
     tag::Tag,
-    project::Project
+    project::Project,
+    task::Task,
 }; 
 
 fn main() -> Result<(), ConfyError> {
