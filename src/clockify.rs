@@ -4,7 +4,8 @@ use serde::{Serialize, Deserialize};
 pub struct Config {
     pub base_url: String,
     pub api_key: Option<String>, 
-    pub workspace_id: Option<String>
+    pub workspace_id: Option<String>,
+    pub project_id: Option<String>
 }
 
 impl Default for Config {
@@ -12,7 +13,8 @@ impl Default for Config {
         Config {
             base_url: String::from("https://api.clockify.me/api/v1"), 
             api_key: None, 
-            workspace_id: None
+            workspace_id: None,
+            project_id: None
         }
     }
 }
