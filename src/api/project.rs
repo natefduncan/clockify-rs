@@ -1,9 +1,9 @@
 use std::fmt;
 use crate::clockify::Config; 
 use crate::api::{
-    EndPoint, EndpointError,
+    EndPoint,
     task::Task,
-    common::Rate,
+    common::{Rate, Membership},
 }; 
 use serde::{Serialize, Deserialize};
 
@@ -31,17 +31,6 @@ pub struct Project {
     pub public: Option<bool>, 
     pub template: Option<bool>, 
     pub favorite: Option<bool>
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct Membership {
-    pub user_id: String, 
-    pub hourly_rate: Option<String>, 
-    pub cost_rate: Option<String>, 
-    pub target_id: String, 
-    pub membership_type: String, 
-    pub membership_status: String
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

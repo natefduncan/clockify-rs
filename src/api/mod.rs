@@ -3,12 +3,13 @@ pub mod project;
 pub mod common; 
 pub mod task;
 pub mod time_entry; 
+pub mod user;
 
 use std::collections::HashMap;
 use std::fmt;
 use reqwest::blocking::{Client, RequestBuilder}; 
 
-use serde::{Serialize, Deserialize}; 
+use serde::{Serialize}; 
 use crate::clockify::{Config}; 
 
 type EndpointParameters = HashMap<String, ParameterValue>;
