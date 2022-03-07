@@ -45,8 +45,7 @@ impl<T> StatefulList<T> {
 pub struct App<'a> {
     pub title: &'a str,
     pub should_quit: bool, 
-    // pub days: StatefulList<&'a str>, 
-    // pub time_entries: StatefulList<&'a str>
+    pub time_entries: StatefulList<&'a str>
 }
 
 impl<'a> App<'a> {
@@ -54,6 +53,7 @@ impl<'a> App<'a> {
         App {
             title, 
             should_quit: false, 
+            time_entries: StatefulList::with_items(vec![]) 
         }
     }
 
