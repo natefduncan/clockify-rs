@@ -1,19 +1,24 @@
 mod clockify;
 mod api; 
 mod ui; 
+mod error; 
 
 use reqwest::blocking::Client; 
 use confy::ConfyError; 
 use std::io::stdin; 
+use tui::Terminal; 
+use crate::error::Error;
 use crate::clockify::Config;
+use crate::ui::{get_terminal, Backend}; 
 use crate::api::{
     EndPoint,
     project::Project,
 }; 
 
-fn main() -> Result<(), ConfyError> {
+fn main() -> Result<(), Error> {
     let client = Client::new();
     let mut cfg : Config = confy::load("clockify")?;
+    let mut terminal : Terminal<Backend> = get_terminal()?; 
     // API Key
     if cfg.api_key.is_none() {
         let mut s = String::new();

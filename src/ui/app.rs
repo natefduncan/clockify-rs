@@ -81,5 +81,9 @@ impl<'a> App<'a> {
             _ => {}
         }
     }
+    
+    pub fn on_tick(&mut self) {
+        // Update
+    }
 }
 
