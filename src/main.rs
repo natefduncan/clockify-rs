@@ -1,15 +1,14 @@
 mod clockify;
 mod api; 
+mod ui; 
 
 use reqwest::blocking::Client; 
-use confy::{load, store, ConfyError};
-use std::io::{stdin, stdout, Write}; 
+use confy::ConfyError; 
+use std::io::stdin; 
 use crate::clockify::Config;
 use crate::api::{
     EndPoint,
-    tag::Tag,
     project::Project,
-    task::Task,
 }; 
 
 fn main() -> Result<(), ConfyError> {
