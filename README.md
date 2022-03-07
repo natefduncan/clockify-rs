@@ -2,15 +2,15 @@
 Clockify TUI written in Rust
 
 ## Endpoints
-- Client
-- Project
-- Tag
-- Task
-- Time Entry
-- Expense
-- Invoice
-- User
-- Group
-- Workspace
-- Custom Fields
-- Approvals 
+- [ ] Client
+- [X] Project
+- [X] Tag
+- [X] Task
+- [X] Time Entry
+- [ ] Expense
+- [ ] Invoice
+- [X] User
+- [ ] Group
+- [X] Workspace
+- [ ] Custom Fields
+- [ ] Approvals
