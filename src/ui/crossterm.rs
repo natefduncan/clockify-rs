@@ -13,7 +13,7 @@ use tui::{
     Terminal, 
 }; 
 
-use crate::ui::app::App; 
+use crate::clockify::App; 
 use crate::ui::components::draw; 
 
 pub fn run(tick_rate: Duration) -> Result<(), Box<dyn Error>> {

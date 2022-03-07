@@ -11,7 +11,7 @@ use tui::{
     Frame,
 };
 
-use crate::ui::app::App; 
+use crate::clockify::App; 
 
 pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     let chunks = Layout::default()
@@ -27,7 +27,8 @@ pub fn draw_time_entries<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
     let time_entries: Vec<ListItem> = app.time_entries
         .items
         .iter()
-        .map(|i| ListItem::new(vec![Spans::from(Span::raw(*i))]))
+        .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.description.clone().unwrap()))]))
+        // FIXME: Time Entry clone
         .collect();
     let time_entries = List::new(time_entries)
         .block(Block::default().borders(Borders::ALL).title("Time Entries"))

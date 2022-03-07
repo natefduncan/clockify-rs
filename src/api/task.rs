@@ -40,9 +40,11 @@ impl fmt::Display for Task {
 
 impl EndPoint for Task {
     fn endpoint(config: &Config) -> String {
+        // FIXME
         format!("/workspaces/{}/projects/{}/tasks", 
             config.workspace_id.as_ref().unwrap().clone(),
-            config.project_id.as_ref().unwrap().clone()
+            // config.project_id.as_ref().unwrap().clone()
+            "project_id"
         )   
     }
 }

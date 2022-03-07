@@ -4,9 +4,7 @@ mod ui;
 mod error; 
 
 use reqwest::blocking::Client; 
-use confy::ConfyError; 
 use std::io::stdin; 
-use tui::Terminal; 
 use crate::error::Error;
 use crate::clockify::Config;
 use crate::api::{

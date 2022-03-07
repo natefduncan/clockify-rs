@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::fmt;
 use reqwest::blocking::{Client, RequestBuilder}; 
 
-use serde::{Serialize}; 
+use serde::Serialize; 
 use crate::clockify::{Config}; 
 
 type EndpointParameters = HashMap<String, ParameterValue>;
