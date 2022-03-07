@@ -44,7 +44,6 @@ pub struct Setting {
     pub time_rounding_in_reports: bool, 
     pub track_time_down_to_second: bool, 
     pub is_project_public_by_default: bool, 
-    pub can_see_tracker: bool, 
     pub feature_subscription_type: Option<String>
 }
 
@@ -72,7 +71,7 @@ impl fmt::Display for Workspace {
     }
 }
 
-impl EndPoint for Tag {
+impl EndPoint for Workspace {
     fn endpoint(config: &Config) -> String {
         format!("/workspaces")
     }

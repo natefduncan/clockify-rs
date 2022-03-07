@@ -4,6 +4,7 @@ pub mod common;
 pub mod task;
 pub mod time_entry; 
 pub mod user;
+pub mod workspace; 
 
 use std::collections::HashMap;
 use std::fmt;
