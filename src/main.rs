@@ -6,31 +6,21 @@ mod error;
 use reqwest::blocking::Client; 
 use std::io::stdin; 
 use crate::error::Error;
-use crate::clockify::Config;
+use tui::backend::CrosstermBackend; 
+use crate::clockify::{App};
+use crate::ui::crossterm; 
 use crate::api::{
     EndPoint,
     project::Project,
 }; 
+use std::time::Duration; 
 
 fn main() -> Result<(), Error> {
     let client = Client::new();
-    let mut cfg : Config = confy::load("clockify")?;
-    // API Key
-    if cfg.api_key.is_none() {
-        let mut s = String::new();
-        println!("Enter Clockify API Key: ");
-        stdin().read_line(&mut s).expect("Unable to read input");
-        cfg.api_key = Some(format!("{}", s.trim()));
-    }
-    // Workspace Id
-    if cfg.workspace_id.is_none() {
-        let mut s = String::new(); 
-        println!("Enter Clockify Workspace Id: ");
-        stdin().read_line(&mut s).expect("Unable to read input: "); 
-        cfg.workspace_id = Some(format!("{}", s.trim())); 
-    }
-    println!("{:?}", Project::list(&client, &cfg, None)); 
-    confy::store("clockify", cfg)?; 
+    let mut app = App::new("clockify-cli");
+    let tick_rate = Duration::from_millis(250); 
+    crossterm::run(tick_rate).unwrap(); 
+    confy::store("clockify", app.config)?;
     Ok(())
 }
 

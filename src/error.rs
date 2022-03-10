@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub enum Error {
     Confy(confy::ConfyError), 
-    Io(std::io::Error)
+    Io(std::io::Error),
 }
 
 impl From<confy::ConfyError> for Error {

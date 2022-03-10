@@ -12,9 +12,8 @@ use tui::{
     backend::{Backend, CrosstermBackend}, 
     Terminal, 
 }; 
-
+use crate::ui::screens::draw; 
 use crate::clockify::App; 
-use crate::ui::components::draw; 
 
 pub fn run(tick_rate: Duration) -> Result<(), Box<dyn Error>> {
     // setup terminal

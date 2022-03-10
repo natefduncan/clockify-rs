@@ -1,11 +1,16 @@
-use crate::{api::{
-    tag::Tag, 
-    project::Project, 
-    time_entry::TimeEntry, 
-    workspace::Workspace,
-}, ui::app::StatefulList};
+use crate::{
+    api::{
+        tag::Tag, 
+        project::Project, 
+        time_entry::TimeEntry, 
+        workspace::Workspace,
+    },
+    ui::components::StatefulList
+
+};
 
 use serde::{Serialize, Deserialize};
+use tui::widgets::ListState; 
 
 #[derive(Debug, Clone)]
 pub struct App<'a> {
