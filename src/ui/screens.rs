@@ -8,11 +8,16 @@ use tui::{
     Frame
 }; 
 
+use reqwest::blocking::Client; 
 use crate::{
-    clockify::App, 
+    clockify::App,
+    api::EndPoint, 
+    ui::components::StatefulList
 };
 
-pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
+use crate::api::workspace::Workspace; 
+
+pub fn draw<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App) {
     let chunks = Layout::default()
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(f.size());
@@ -22,14 +27,18 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     }
 
     if app.config.workspace_id.is_none() {
-        draw_get_workspace_id(f, app, chunks[1]);
+        draw_get_workspace_id(f, client, app, chunks[1]);
     }
     draw_time_entries(f, app, chunks[1]);
 }
 
-pub fn draw_get_workspace_id<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
+pub fn draw_get_workspace_id<B>(f: &mut Frame<B>, client: &Client, app: &mut App, area: Rect)
     where B: Backend
 {
+    // If app.workspaces is zero, populate.
+    if app.workspaces.items.len() == 0 {
+        app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap());
+    }
    let workspaces: Vec<ListItem> = app.workspaces
        .items
        .iter()

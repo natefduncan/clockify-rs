@@ -16,10 +16,9 @@ use crate::api::{
 use std::time::Duration; 
 
 fn main() -> Result<(), Error> {
-    let client = Client::new();
     let mut app = App::new("clockify-cli");
     let tick_rate = Duration::from_millis(250); 
-    crossterm::run(tick_rate).unwrap(); 
+    crossterm::run(&mut app, tick_rate).unwrap(); 
     confy::store("clockify", app.config)?;
     Ok(())
 }
