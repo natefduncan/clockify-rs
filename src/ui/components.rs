@@ -1,8 +1,13 @@
 use tui::{
     widgets::{ListState, Widget, StatefulWidget}, 
-    buffer::Buffer,
-    layout::Rect
 }; 
+
+#[derive(Debug, Clone)]
+pub struct InputBox {
+    pub title: String,
+    pub text: String, 
+}
+
 
 #[derive(Debug, Clone)]
 pub struct StatefulList<T> {

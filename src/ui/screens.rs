@@ -12,7 +12,7 @@ use reqwest::blocking::Client;
 use crate::{
     clockify::App,
     api::EndPoint, 
-    ui::components::StatefulList
+    ui::components::{StatefulList, InputBox}
 };
 
 use crate::api::workspace::Workspace; 
@@ -24,12 +24,11 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App) {
     f.render_widget(Paragraph::new(app.title), chunks[0]); 
     if app.config.api_key.is_none() {
         draw_get_api_key(f, app, chunks[1]); 
-    }
-
-    if app.config.workspace_id.is_none() {
+    } else if app.config.workspace_id.is_none() {
         draw_get_workspace_id(f, client, app, chunks[1]);
+    } else {
+        draw_time_entries(f, app, chunks[1]);
     }
-    draw_time_entries(f, app, chunks[1]);
 }
 
 pub fn draw_get_workspace_id<B>(f: &mut Frame<B>, client: &Client, app: &mut App, area: Rect)
@@ -57,6 +56,7 @@ pub fn draw_get_api_key<B>(f: &mut Frame<B>, app: &mut App, area: Rect)
     let block = Block::default()
         .title("Enter Clockify API Key")
         .borders(Borders::ALL); 
+
 }
 
 
