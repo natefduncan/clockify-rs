@@ -20,7 +20,6 @@ use crate::api::workspace::Workspace;
 #[derive(Debug, Clone)]
 pub enum Screen {
     Home,
-    ApiInput,
     WorkspaceSelection, 
     TimeEntryList
 }
@@ -30,10 +29,7 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App) {
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(f.size());
     f.render_widget(Paragraph::new(app.title), chunks[0]); 
-    if app.config.api_key.is_none() {
-        app.current_screen = Screen::ApiInput; 
-        app.api_key_input.render(f, client, chunks[1]);
-    } else if app.config.workspace_id.is_none() {
+    if app.config.workspace_id.is_none() {
         app.current_screen = Screen::WorkspaceSelection; 
         app.workspaces.render(f, client, chunks[1]); 
     } else {

@@ -2,6 +2,7 @@
 pub enum Error {
     Confy(confy::ConfyError), 
     Io(std::io::Error),
+    MissingApiKey
 }
 
 impl From<confy::ConfyError> for Error {

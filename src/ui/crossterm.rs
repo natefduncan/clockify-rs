@@ -72,5 +72,5 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
             return Ok(());
         }   
     }
-
+  
 }
