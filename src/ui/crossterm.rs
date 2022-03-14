@@ -13,8 +13,10 @@ use tui::{
     Terminal, 
 }; 
 use reqwest::blocking::Client; 
-use crate::ui::screens::draw; 
-use crate::clockify::App; 
+use crate::ui::screens::{draw, Screen}; 
+use crate::clockify::App;
+
+use super::components::Component; 
 
 pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Box<dyn Error>> {
     // setup terminal
@@ -54,14 +56,12 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
             .unwrap_or_else(|| Duration::from_secs(0));
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
-                 match key.code {
-                    KeyCode::Char(c) => app.on_key(c), 
-                    KeyCode::Left => app.on_left(), 
-                    KeyCode::Up => app.on_up(), 
-                    KeyCode::Right => app.on_right(), 
-                    KeyCode::Down => app.on_down(),
+                match app.current_screen {
+                    Screen::ApiInput => app.api_key_input.key_event(key.code), 
+                    Screen::WorkspaceSelection => app.workspaces.key_event(key.code), 
+                    Screen::TimeEntryList => app.time_entries.key_event(key.code), 
                     _ => {}
-                 }
+                }
             }
         }
         if last_tick.elapsed() >= tick_rate {

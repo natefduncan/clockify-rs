@@ -5,7 +5,8 @@ use crate::{
         time_entry::TimeEntry, 
         workspace::Workspace,
     },
-    ui::components::{StatefulList, InputBox}
+    ui::components::{StatefulList, InputBox}, 
+    ui::screens::Screen,
 };
 
 use serde::{Serialize, Deserialize};
@@ -16,6 +17,7 @@ pub struct App<'a> {
     pub title: &'a str, 
     pub should_quit: bool,
     pub config: Config,
+    pub current_screen: Screen, 
     pub workspaces: StatefulList<Workspace>,
     pub projects: StatefulList<Project>,
     pub tags: StatefulList<Tag>, 
@@ -29,6 +31,7 @@ impl<'a> App<'a> {
             title, 
             should_quit: false, 
             config: confy::load("clockify").unwrap(), 
+            current_screen: Screen::Home, 
             workspaces: StatefulList::with_items(vec![]), 
             projects: StatefulList::with_items(vec![]),
             tags: StatefulList::with_items(vec![]), 
