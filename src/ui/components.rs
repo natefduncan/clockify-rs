@@ -108,7 +108,6 @@ impl<T: Display> StatefulList<T> {
 }
 
 impl<T: Display> Component for StatefulList<T> {
-
     fn render<B: Backend>(&mut self, f: &mut Frame<B>, client: &Client, area: Rect) {
         let list_item : Vec<ListItem> = self.items.iter()
            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
@@ -118,6 +117,5 @@ impl<T: Display> Component for StatefulList<T> {
             .highlight_style(Style::default().add_modifier(Modifier::BOLD));
         f.render_stateful_widget(list_item, area, &mut self.state)
     }
-
 }
 
