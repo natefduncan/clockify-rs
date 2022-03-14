@@ -5,8 +5,7 @@ use crate::{
         time_entry::TimeEntry, 
         workspace::Workspace,
     },
-    ui::components::StatefulList
-
+    ui::components::{StatefulList, InputBox}
 };
 
 use serde::{Serialize, Deserialize};
@@ -21,6 +20,7 @@ pub struct App<'a> {
     pub projects: StatefulList<Project>,
     pub tags: StatefulList<Tag>, 
     pub time_entries: StatefulList<TimeEntry>,
+    pub api_key_input: InputBox, 
 }
 
 impl<'a> App<'a> {
@@ -33,6 +33,7 @@ impl<'a> App<'a> {
             projects: StatefulList::with_items(vec![]),
             tags: StatefulList::with_items(vec![]), 
             time_entries: StatefulList::with_items(vec![]), 
+            api_key_input: InputBox::from("Please enter API Key: ")
         }
     }
 
