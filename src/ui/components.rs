@@ -10,7 +10,7 @@ use tui::{
 
 use std::fmt::Display;
 
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyEvent};
 use crate::{
     clockify::App,
     api::EndPoint
@@ -19,7 +19,7 @@ use reqwest::blocking::Client;
 
 pub trait Component {
    fn render<B: Backend>(&mut self, f: &mut Frame<B>, client: &Client, area: Rect);
-   fn key_event(&mut self, key: KeyCode);
+   fn key_event(&mut self, key: KeyEvent);
 }
 
 #[derive(Debug, Clone)]
@@ -46,8 +46,8 @@ impl Component for InputBox {
         f.render_widget(Paragraph::new(self.text.clone()), chunks[1]); 
     }
 
-    fn key_event(&mut self, key: KeyCode) {
-        match key {
+    fn key_event(&mut self, key: KeyEvent) {
+        match key.code {
             KeyCode::Char(c) => {
                 self.text = format!("{}{}", self.text, c); 
             },
@@ -128,8 +128,8 @@ impl<T: Display> Component for StatefulList<T> {
         f.render_stateful_widget(list_item, area, &mut self.state)
     }
 
-    fn key_event(&mut self, key_code: KeyCode) {
-        match key_code {
+    fn key_event(&mut self, key: KeyEvent) {
+        match key.code {
             KeyCode::Up => {
                 self.previous()
             }, 

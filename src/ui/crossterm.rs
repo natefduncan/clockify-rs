@@ -57,8 +57,8 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
                 match app.current_screen {
-                    Screen::WorkspaceSelection => app.workspaces.key_event(key.code), 
-                    Screen::TimeEntryList => app.time_entries.key_event(key.code), 
+                    Screen::WorkspaceSelection => app.workspaces.key_event(key), 
+                    Screen::TimeEntryList => app.time_entries.key_event(key), 
                     _ => {}
                 }
             }
