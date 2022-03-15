@@ -72,7 +72,7 @@ impl fmt::Display for Workspace {
 }
 
 impl EndPoint for Workspace {
-    fn endpoint(config: &Config) -> String {
+    fn endpoint(_config: &Config) -> String {
         format!("/workspaces")
     }
 }

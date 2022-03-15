@@ -141,7 +141,7 @@ pub trait EndPoint {
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de>, Self: Serialize {
         let url : String = Self::format_url(None, None, config);
         let request : RequestBuilder = Self::set_api_key(client.post(url), config);
-        let response = request
+        let _response = request
             .json(self)
             .send()?
             .json::<Self>()?;

@@ -5,13 +5,14 @@ use crate::{
         time_entry::TimeEntry, 
         workspace::Workspace,
     },
-    ui::components::{StatefulList, InputBox}, 
-    ui::screens::Screen,
+    ui::{
+        components::{StatefulList, InputBox},
+        Screen
+    }
 };
 
 use crossterm::event::{KeyEvent, KeyModifiers, KeyCode};
 use serde::{Serialize, Deserialize};
-use tui::widgets::ListState; 
 
 #[derive(Debug, Clone)]
 pub struct App<'a> {

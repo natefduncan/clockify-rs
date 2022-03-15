@@ -1,24 +1,16 @@
 use tui::{
     backend::Backend, 
     layout::{Constraint, Direction, Layout, Rect}, 
-    style::{Color, Modifier, Style}, 
-    symbols, 
+    style::{Modifier, Style}, 
     text::{Span, Spans},
-    widgets::{Block, Borders, Cell, List, ListItem, Paragraph, Widget, StatefulWidget, ListState},
+    widgets::{Block, Borders, List, ListItem, Paragraph, ListState},
     Frame
 }; 
-
 use std::fmt::Display;
-
 use crossterm::event::{KeyCode, KeyEvent};
-use crate::{
-    clockify::App,
-    api::EndPoint
-};
-use reqwest::blocking::Client;
 
 pub trait Component {
-   fn render<B: Backend>(&mut self, f: &mut Frame<B>, client: &Client, area: Rect);
+   fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect);
    fn key_event(&mut self, key: KeyEvent);
 }
 
@@ -29,10 +21,7 @@ pub struct InputBox {
 }
 
 impl Component for InputBox {
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, client: &Client, area: Rect) {
-        let block = Block::default()
-            .title(self.prompt.clone())
-            .borders(Borders::ALL);
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .margin(5)
@@ -118,7 +107,7 @@ impl<T: Display> StatefulList<T> {
 }
 
 impl<T: Display> Component for StatefulList<T> {
-    fn render<B: Backend>(&mut self, f: &mut Frame<B>, client: &Client, area: Rect) {
+    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         let list_item : Vec<ListItem> = self.items.iter()
            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
            .collect();
