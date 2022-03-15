@@ -111,12 +111,12 @@ impl<T: Display> StatefulList<T> {
 impl<T: Display> Component for StatefulList<T> {
     fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         let chunks = Layout::default()
-            .direction(Direction::Horizontal)
+            .direction(Direction::Vertical)
             .margin(5)
             .constraints(
                 [
-                Constraint::Percentage(25), 
-                Constraint::Percentage(75)
+                Constraint::Min(1), 
+                Constraint::Min(0),
                 ].as_ref()
             ).split(area); 
         f.render_widget(Paragraph::new(self.title.clone()), chunks[0]); 
