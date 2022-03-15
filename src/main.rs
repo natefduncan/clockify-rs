@@ -18,7 +18,7 @@ struct Args {
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
-    let mut app = App::new("clockify-cli");
+    let mut app = App::new("Clockify");
     if app.config.api_key.is_none() && args.api_key.is_none() {
         return Err(Error::MissingApiKey);
     } else {

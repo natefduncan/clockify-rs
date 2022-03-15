@@ -34,10 +34,10 @@ impl<'a> App<'a> {
             should_quit: false, 
             config: confy::load("clockify").unwrap(), 
             current_screen: Screen::Home, 
-            workspaces: StatefulList::with_items(vec![]), 
-            projects: StatefulList::with_items(vec![]),
-            tags: StatefulList::with_items(vec![]), 
-            time_entries: StatefulList::with_items(vec![]), 
+            workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: ")), 
+            projects: StatefulList::with_items(vec![], String::from("Select a project: ")),
+            tags: StatefulList::with_items(vec![], String::from("Select a tag: ")), 
+            time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: ")), 
             api_key_input: InputBox::from("Please enter API Key: ")
         }
     }

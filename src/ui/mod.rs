@@ -100,11 +100,11 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App) {
         .split(f.size());
     f.render_widget(Paragraph::new(app.title), chunks[0]); 
     if app.config.workspace_id.is_none() {
-        app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap());
+        app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "));
         app.current_screen = Screen::WorkspaceSelection; 
         app.workspaces.render(f, chunks[1]); 
     } else {
-        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap());
+        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "));
         app.current_screen = Screen::TimeEntryList;
         app.time_entries.render(f, chunks[1]); 
     }

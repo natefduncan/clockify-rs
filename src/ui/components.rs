@@ -65,15 +65,17 @@ impl From<String> for InputBox {
 
 #[derive(Debug, Clone)]
 pub struct StatefulList<T: Display> {
+    pub title: String, 
     pub state: ListState, 
     pub items: Vec<T>
 }
 
 impl<T: Display> StatefulList<T> {
-    pub fn with_items(items: Vec<T>) -> StatefulList<T> {
+    pub fn with_items(items: Vec<T>, title: String) -> StatefulList<T> {
         StatefulList {
             state: ListState::default(), 
-            items
+            items,
+            title
         }
     }
 
@@ -108,13 +110,23 @@ impl<T: Display> StatefulList<T> {
 
 impl<T: Display> Component for StatefulList<T> {
     fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .margin(5)
+            .constraints(
+                [
+                Constraint::Percentage(25), 
+                Constraint::Percentage(75)
+                ].as_ref()
+            ).split(area); 
+        f.render_widget(Paragraph::new(self.title.clone()), chunks[0]); 
         let list_item : Vec<ListItem> = self.items.iter()
-           .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
-           .collect();
+            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
+            .collect();
         let list_item = List::new(list_item)
             .block(Block::default().borders(Borders::ALL))
             .highlight_style(Style::default().add_modifier(Modifier::BOLD));
-        f.render_stateful_widget(list_item, area, &mut self.state)
+        f.render_stateful_widget(list_item, chunks[1], &mut self.state)
     }
 
     fn key_event(&mut self, key: KeyEvent) {
