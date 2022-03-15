@@ -9,6 +9,7 @@ use crate::{
     ui::screens::Screen,
 };
 
+use crossterm::event::{KeyEvent, KeyModifiers, KeyCode};
 use serde::{Serialize, Deserialize};
 use tui::widgets::ListState; 
 
@@ -40,33 +41,21 @@ impl<'a> App<'a> {
         }
     }
 
-    pub fn on_up(&mut self) {
-        // TODO
-    }
-
-    pub fn on_down(&mut self) {
-        // TODO
-    }
-
-    pub fn on_right(&mut self) {
-        // TODO
-    }
-
-    pub fn on_left(&mut self) {
-        // TODO
-    }
-
-    pub fn on_key(&mut self, c: char) {
-        match c {
-            'q' => {
-                self.should_quit = true;
-            }
+    pub fn key_event(&mut self, key: KeyEvent) {
+        match key.modifiers {
+            KeyModifiers::CONTROL => {
+               match key.code {
+                    KeyCode::Char(c) => {
+                        match c {
+                            'q' => { self.should_quit = true; },
+                            _ => {}
+                        }
+                    }, 
+                    _ => {},
+               }
+            },
             _ => {}
         }
-    }
-    
-    pub fn on_tick(&mut self) {
-        // Update
     }
 }
 

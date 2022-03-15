@@ -56,15 +56,18 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
             .unwrap_or_else(|| Duration::from_secs(0));
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
+                // Screen specific key event
                 match app.current_screen {
-                    Screen::WorkspaceSelection => app.workspaces.key_event(key.code), 
-                    Screen::TimeEntryList => app.time_entries.key_event(key.code), 
+                    Screen::WorkspaceSelection => app.workspaces.key_event(key), 
+                    Screen::TimeEntryList => app.time_entries.key_event(key), 
                     _ => {}
                 }
+                // App key events
+                app.key_event(key)
             }
         }
         if last_tick.elapsed() >= tick_rate {
-            app.on_tick();
+            // app.on_tick();
             last_tick = Instant::now();
         }
         if app.should_quit {

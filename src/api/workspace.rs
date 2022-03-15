@@ -34,7 +34,7 @@ pub struct Setting {
     pub only_admins_create_tag: bool, 
     pub only_admins_create_task: bool, 
     pub only_admins_see_all_time_entries: bool, 
-    pub only_admins_see_all_billable_rates: bool, 
+    pub only_admins_see_billable_rates: bool, 
     pub only_admins_see_dashboard: bool, 
     pub only_admins_see_public_projects_entries: bool, 
     pub project_favorites: bool, 
