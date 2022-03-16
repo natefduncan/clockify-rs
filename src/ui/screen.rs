@@ -14,7 +14,7 @@ use crate::{
         EndPoint,
         user::User, 
         time_entry::TimeEntry, 
-        workspace::Workspace
+        workspace::Workspace, project::Project
     }, 
     ui::{
         components::{StatefulList, Component}, 
@@ -85,4 +85,22 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     app.time_entries.render(f, chunks[1]);
 }
 
+// Project Selection
+pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
+    // App Title
+    let chunks = template_screen(f, client, app);
+    f.render_widget(Paragraph::new(app.title), chunks[0]);
+    if app.projects.items.len() == 0 {
+        app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "));
+    }
+    app.projects.render(f, chunks[1]);
+
+    // Key Event
+    if let Some(event) = key {
+        app.projects.key_event(event);
+        match event.code {
+            _ => {}
+        }
+    }
+}
 

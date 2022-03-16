@@ -33,7 +33,8 @@ use crate::{
 pub enum Screen {
     Home,
     WorkspaceSelection, 
-    TimeEntrySelection 
+    TimeEntrySelection, 
+    ProjectSelection,
 }
 
 pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Box<dyn Error>> {
@@ -72,7 +73,8 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
                 Screen::Home => screen::home(f, client, app, None),
                 Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, None),
                 Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, None),
-                _ => {}
+                Screen::ProjectSelection => screen::project_selection(f, client, app, None),
+               _ => {}
             }
         })?;
 
@@ -86,6 +88,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
                     match app.current_screen {
                         Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, Some(key)), 
                         Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, Some(key)), 
+                        Screen::ProjectSelection => screen::project_selection(f, client, app, Some(key)),
                         _ => {}
                     }
                 })?; 
