@@ -14,7 +14,7 @@ use crate::{
         EndPoint,
         user::User, 
         time_entry::TimeEntry, 
-        workspace::Workspace, project::Project
+        workspace::Workspace, project::Project, tag::Tag
     }, 
     ui::{
         components::{StatefulList, Component}, 
@@ -98,6 +98,25 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     // Key Event
     if let Some(event) = key {
         app.projects.key_event(event);
+        match event.code {
+            _ => {}
+        }
+    }
+}
+
+// Tag Selection
+pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
+    // App Title
+    let chunks = template_screen(f, client, app);
+    f.render_widget(Paragraph::new(app.title), chunks[0]);
+    if app.tags.items.len() == 0 {
+        app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "));
+    }
+    app.tags.render(f, chunks[1]);
+
+    // Key Event
+    if let Some(event) = key {
+        app.tags.key_event(event);
         match event.code {
             _ => {}
         }

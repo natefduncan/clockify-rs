@@ -24,7 +24,6 @@ pub struct App<'a> {
     pub projects: StatefulList<Project>,
     pub tags: StatefulList<Tag>, 
     pub time_entries: StatefulList<TimeEntry>,
-    pub api_key_input: InputBox, 
 }
 
 impl<'a> App<'a> {
@@ -38,7 +37,6 @@ impl<'a> App<'a> {
             projects: StatefulList::with_items(vec![], String::from("Select a project: ")),
             tags: StatefulList::with_items(vec![], String::from("Select a tag: ")), 
             time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: ")), 
-            api_key_input: InputBox::from("Please enter API Key: ")
         }
     }
 
@@ -62,6 +60,7 @@ impl<'a> App<'a> {
                             'w' => { self.current_screen = Screen::WorkspaceSelection }, 
                             'e' => { self.current_screen = Screen::TimeEntrySelection },
                             'p' => { self.current_screen = Screen::ProjectSelection },
+                            't' => { self.current_screen = Screen::TagSelection },
                             _ => {}
                         }
                     }, 
