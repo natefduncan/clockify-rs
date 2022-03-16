@@ -61,6 +61,7 @@ impl<'a> App<'a> {
                         match c {
                             'w' => { self.current_screen = Screen::WorkspaceSelection }, 
                             'e' => { self.current_screen = Screen::TimeEntrySelection },
+                            'p' => { self.current_screen = Screen::ProjectSelection },
                             _ => {}
                         }
                     }, 
