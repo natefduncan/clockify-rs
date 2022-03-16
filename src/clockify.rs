@@ -55,6 +55,18 @@ impl<'a> App<'a> {
                     _ => {},
                }
             },
+            KeyModifiers::NONE => {
+                match key.code {
+                    KeyCode::Char(c) => {
+                        match c {
+                            'w' => { self.current_screen = Screen::WorkspaceSelection }, 
+                            'e' => { self.current_screen = Screen::TimeEntryList },
+                            _ => {}
+                        }
+                    }, 
+                    _ => {}
+                }
+            }
             _ => {}
         }
     }

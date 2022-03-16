@@ -106,6 +106,14 @@ impl<T: Display> StatefulList<T> {
         }; 
         self.state.select(Some(i))
     }
+
+    pub fn get_selected_item(&self) -> &T {
+        let i = match self.state.selected() {
+            Some(i) => i, 
+            None => 0
+        };
+        return self.items.get(i).unwrap();
+    }
 }
 
 impl<T: Display> Component for StatefulList<T> {

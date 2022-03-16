@@ -1,7 +1,8 @@
 pub mod components; 
+pub mod screen;
 
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event}, 
+    event::{self, KeyCode, KeyEvent, EnableMouseCapture, Event, DisableMouseCapture}, 
     execute, 
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
 }; 
@@ -25,7 +26,7 @@ use crate::{
         time_entry::TimeEntry, 
         workspace::Workspace
     },
-    ui::components::{Component, StatefulList}
+    ui::components::{Component, StatefulList},
 }; 
 
 #[derive(Debug, Clone)]
@@ -66,7 +67,14 @@ pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Box<dyn Error>> {
 pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mut App, tick_rate: Duration) -> io::Result<()> {
     let mut last_tick = Instant::now();
     loop {
-        terminal.draw(|f| draw(f, client, app))?;
+        terminal.draw(|f| {
+            match app.current_screen {
+                Screen::Home => screen::home(f, client, app, None),
+                Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, None),
+                Screen::TimeEntryList => screen::time_entry_selection(f, client, app, None),
+                _ => {}
+            }
+        })?;
 
         let timeout = tick_rate
             .checked_sub(last_tick.elapsed())
@@ -74,11 +82,13 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
                 // Screen specific key event
-                match app.current_screen {
-                    Screen::WorkspaceSelection => app.workspaces.key_event(key), 
-                    Screen::TimeEntryList => app.time_entries.key_event(key), 
-                    _ => {}
-                }
+                terminal.draw(|f| {
+                    match app.current_screen {
+                        Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, Some(key)), 
+                        Screen::TimeEntryList => screen::time_entry_selection(f, client, app, Some(key)), 
+                        _ => {}
+                    }
+                })?; 
                 // App key events
                 app.key_event(key)
             }
@@ -94,24 +104,3 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
   
 }
 
-pub fn draw<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App) {
-    let chunks = Layout::default()
-        .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
-        .split(f.size());
-    f.render_widget(Paragraph::new(app.title), chunks[0]); 
-    // Workspace Screen
-    if app.config.workspace_id.is_none() {
-        if app.workspaces.items.len() == 0 {
-            app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "));
-        }
-        app.current_screen = Screen::WorkspaceSelection; 
-        app.workspaces.render(f, chunks[1]); 
-    // Time Entry Screen
-    } else {
-        if app.time_entries.items.len() == 0 {
-            app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "));
-        }
-        app.current_screen = Screen::TimeEntryList;
-        app.time_entries.render(f, chunks[1]); 
-    }
-}
