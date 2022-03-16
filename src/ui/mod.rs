@@ -99,12 +99,18 @@ pub fn draw<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App) {
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
         .split(f.size());
     f.render_widget(Paragraph::new(app.title), chunks[0]); 
+    // Workspace Screen
     if app.config.workspace_id.is_none() {
-        app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "));
+        if app.workspaces.items.len() == 0 {
+            app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "));
+        }
         app.current_screen = Screen::WorkspaceSelection; 
         app.workspaces.render(f, chunks[1]); 
+    // Time Entry Screen
     } else {
-        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "));
+        if app.time_entries.items.len() == 0 {
+            app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "));
+        }
         app.current_screen = Screen::TimeEntryList;
         app.time_entries.render(f, chunks[1]); 
     }
