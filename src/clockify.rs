@@ -60,7 +60,7 @@ impl<'a> App<'a> {
                     KeyCode::Char(c) => {
                         match c {
                             'w' => { self.current_screen = Screen::WorkspaceSelection }, 
-                            'e' => { self.current_screen = Screen::TimeEntryList },
+                            'e' => { self.current_screen = Screen::TimeEntrySelection },
                             _ => {}
                         }
                     }, 
@@ -77,6 +77,7 @@ pub struct Config {
     pub base_url: String,
     pub api_key: Option<String>, 
     pub workspace_id: Option<String>,
+    pub user_id: Option<String>
 }
 
 impl Default for Config {
@@ -85,6 +86,7 @@ impl Default for Config {
             base_url: String::from("https://api.clockify.me/api/v1"), 
             api_key: None, 
             workspace_id: None,
+            user_id: None
         }
     }
 }

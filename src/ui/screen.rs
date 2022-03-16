@@ -12,6 +12,7 @@ use crate::{
     clockify::App,
     api::{
         EndPoint,
+        user::User, 
         time_entry::TimeEntry, 
         workspace::Workspace
     }, 
@@ -36,6 +37,15 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.title), chunks[0]);
+    // If no user_id, send request
+    if app.config.user_id.is_none() {
+        let current_user = client.get(format!("{}{}", app.config.base_url, "/user"))
+            .header("X-API-KEY", app.config.api_key.as_ref().unwrap().clone())
+            .send().unwrap()
+            .json::<User>().unwrap();
+        app.config.user_id = current_user.id.clone();
+    }
+
     // Force workspace selection
     if app.config.workspace_id.is_none() {
         app.current_screen = Screen::WorkspaceSelection;

@@ -22,7 +22,7 @@ pub struct TimeEntry {
     pub description: Option<String>,
     pub project_id: Option<String>, 
     pub task_id: Option<String>, 
-    pub tag_ids: Option<Vec<Tag>>, 
+    pub tag_ids: Option<Vec<String>>, 
     pub time_interval: Option<TimeInterval>, 
     pub user_id: Option<String>, 
     pub workspace_id: Option<String>,
@@ -69,6 +69,6 @@ impl fmt::Display for TimeEntry {
 
 impl EndPoint for TimeEntry {
     fn endpoint(config: &Config) -> String {
-        format!("/workspaces/{}/time-entries", config.workspace_id.as_ref().unwrap().clone())
+        format!("/workspaces/{}/user/{}/time-entries", config.workspace_id.as_ref().unwrap().clone(), config.user_id.as_ref().unwrap())
     }
 }
