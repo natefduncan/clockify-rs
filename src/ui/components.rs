@@ -67,6 +67,8 @@ impl From<String> for InputBox {
 
 #[derive(Debug, Clone)]
 pub struct StatefulList<T: Display> {
+    pub selected: Vec<usize>, 
+    pub multiselect: bool, 
     pub title: String, 
     pub state: ListState, 
     pub items: Vec<T>
@@ -75,6 +77,8 @@ pub struct StatefulList<T: Display> {
 impl<T: Display> StatefulList<T> {
     pub fn with_items(items: Vec<T>, title: String) -> StatefulList<T> {
         StatefulList {
+            selected: vec![],
+            multiselect: false, 
             state: ListState::default(), 
             items,
             title
@@ -109,12 +113,12 @@ impl<T: Display> StatefulList<T> {
         self.state.select(Some(i))
     }
 
-    pub fn get_selected_item(&self) -> &T {
+    pub fn get_selected_item(&self) -> Option<&T> {
         let i = match self.state.selected() {
             Some(i) => i, 
             None => 0
         };
-        return self.items.get(i).unwrap();
+        return self.items.get(i);
     }
 }
 
