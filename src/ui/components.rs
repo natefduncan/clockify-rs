@@ -8,7 +8,6 @@ use tui::{
 }; 
 use std::fmt::Display;
 use crossterm::event::{KeyCode, KeyEvent};
-
 pub trait Component {
    fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect);
    fn key_event(&mut self, key: KeyEvent);
@@ -23,12 +22,12 @@ pub struct InputBox {
 impl Component for InputBox {
     fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         let chunks = Layout::default()
-            .direction(Direction::Horizontal)
+            .direction(Direction::Vertical)
             .margin(5)
             .constraints(
                 [
-                Constraint::Percentage(25), 
-                Constraint::Percentage(75)
+                Constraint::Min(1), 
+                Constraint::Min(0),
                 ].as_ref()
             ).split(area); 
         f.render_widget(Paragraph::new(self.prompt.clone()), chunks[0]); 
@@ -40,6 +39,9 @@ impl Component for InputBox {
             KeyCode::Char(c) => {
                 self.text = format!("{}{}", self.text, c); 
             },
+            KeyCode::Backspace => {
+                self.text.pop();
+            }
             _ => {}
         }
     }

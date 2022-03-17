@@ -123,3 +123,22 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
     }
 }
 
+// Description Input
+pub fn description_input<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
+    // App Title
+    let chunks = template_screen(f, client, app);
+    f.render_widget(Paragraph::new(app.title), chunks[0]);
+
+    // Description
+    app.description.render(f, chunks[1]);
+
+    // Key Event
+    if let Some(event) = key {
+        app.description.key_event(event); 
+        match event.code {
+            KeyCode::Enter => { app.current_screen = Screen::Home },
+            _ => {}
+        }
+    }
+    
+}

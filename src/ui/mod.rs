@@ -36,6 +36,7 @@ pub enum Screen {
     TimeEntrySelection, 
     ProjectSelection,
     TagSelection,
+    DescriptionEdit, 
 }
 
 pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Box<dyn Error>> {
@@ -76,6 +77,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
                 Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, None),
                 Screen::ProjectSelection => screen::project_selection(f, client, app, None),
                 Screen::TagSelection => screen::tag_selection(f, client, app, None), 
+                Screen::DescriptionEdit => screen::description_input(f, client, app, None), 
                _ => {}
             }
         })?;
@@ -92,6 +94,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
                         Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, Some(key)), 
                         Screen::ProjectSelection => screen::project_selection(f, client, app, Some(key)),
                         Screen::TagSelection => screen::tag_selection(f, client, app, Some(key)),
+                        Screen::DescriptionEdit => screen::description_input(f, client, app, Some(key)), 
                         _ => {}
                     }
                 })?; 
