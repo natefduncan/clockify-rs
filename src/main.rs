@@ -25,7 +25,7 @@ fn main() -> Result<(), Error> {
         if app.config.api_key.is_none() {
             app.config.api_key = args.api_key.clone();
         }
-        let tick_rate = Duration::from_millis(250); 
+        let tick_rate = Duration::from_millis(150); 
         run(&mut app, tick_rate).unwrap(); 
         confy::store("clockify", app.config)?;
         return Ok(());

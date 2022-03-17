@@ -36,7 +36,7 @@ pub fn template_screen<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut 
 pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
     let chunks = template_screen(f, client, app);
-    f.render_widget(Paragraph::new(app.title), chunks[0]);
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     // If no user_id, send request
     if app.config.user_id.is_none() {
         let current_user = client.get(format!("{}{}", app.config.base_url, "/user"))
@@ -56,7 +56,7 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
 pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
     let chunks = template_screen(f, client, app);
-    f.render_widget(Paragraph::new(app.title), chunks[0]); 
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
     if app.workspaces.items.len() == 0 {
             app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "));
     }
@@ -78,7 +78,7 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
 pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
     let chunks = template_screen(f, client, app);
-    f.render_widget(Paragraph::new(app.title), chunks[0]); 
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
     if app.time_entries.items.len() == 0 {
         app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "));
     }
@@ -89,7 +89,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
 pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
     let chunks = template_screen(f, client, app);
-    f.render_widget(Paragraph::new(app.title), chunks[0]);
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     if app.projects.items.len() == 0 {
         app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "));
     }
@@ -108,7 +108,7 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
 pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
     let chunks = template_screen(f, client, app);
-    f.render_widget(Paragraph::new(app.title), chunks[0]);
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     if app.tags.items.len() == 0 {
         app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "));
     }
@@ -127,14 +127,16 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
 pub fn description_input<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
     let chunks = template_screen(f, client, app);
-    f.render_widget(Paragraph::new(app.title), chunks[0]);
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
 
     // Description
     app.description.render(f, chunks[1]);
 
     // Key Event
     if let Some(event) = key {
-        app.description.key_event(event); 
+        if app.current_mode.is_edit() {
+            app.description.key_event(event); 
+        }
         match event.code {
             KeyCode::Enter => { app.current_screen = Screen::Home },
             _ => {}

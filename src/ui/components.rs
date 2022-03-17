@@ -141,6 +141,13 @@ impl<T: Display> Component for StatefulList<T> {
 
     fn key_event(&mut self, key: KeyEvent) {
         match key.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'j' => self.next(),
+                    'k' => self.previous(),
+                    _ => {}
+                }
+            },
             KeyCode::Up => {
                 self.previous()
             }, 

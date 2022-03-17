@@ -13,6 +13,33 @@ use crate::{
 
 use crossterm::event::{KeyEvent, KeyModifiers, KeyCode};
 use serde::{Serialize, Deserialize};
+use std::fmt; 
+
+#[derive(Debug, Clone)]
+pub enum AppMode {
+    Navigation, 
+    Edit
+}
+
+impl fmt::Display for AppMode {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_navigation() {
+            write!(f, "{}", "Navigation")
+        } else {
+            write!(f, "{}", "Edit")
+        }
+    }
+}
+
+impl AppMode {
+    pub fn is_navigation(&self) -> bool {
+        return matches!(&self, AppMode::Navigation);
+    }
+    
+    pub fn is_edit(&self) -> bool {
+        return matches!(&self, AppMode::Edit);
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct App<'a> {
@@ -21,11 +48,19 @@ pub struct App<'a> {
     pub config: Config,
     pub current_screen: Screen, 
     pub current_entry: Option<TimeEntry>, 
+    pub current_mode: AppMode, 
     pub workspaces: StatefulList<Workspace>,
     pub projects: StatefulList<Project>,
     pub tags: StatefulList<Tag>, 
     pub description: InputBox, 
     pub time_entries: StatefulList<TimeEntry>,
+}
+
+impl<'a> fmt::Display for App<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({} Mode)", self.title, self.current_mode)
+
+    }
 }
 
 impl<'a> App<'a> {
@@ -36,6 +71,7 @@ impl<'a> App<'a> {
             config: confy::load("clockify").unwrap(), 
             current_screen: Screen::Home, 
             current_entry: None, 
+            current_mode: AppMode::Navigation, 
             workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: ")), 
             projects: StatefulList::with_items(vec![], String::from("Select a project: ")),
             tags: StatefulList::with_items(vec![], String::from("Select a tag: ")), 
@@ -58,18 +94,29 @@ impl<'a> App<'a> {
                }
             },
             KeyModifiers::NONE => {
-                match key.code {
-                    KeyCode::Char(c) => {
-                        match c {
-                            'w' => { self.current_screen = Screen::WorkspaceSelection }, 
-                            'e' => { self.current_screen = Screen::TimeEntrySelection },
-                            'p' => { self.current_screen = Screen::ProjectSelection },
-                            't' => { self.current_screen = Screen::TagSelection },
-                            'd' => { self.current_screen = Screen::DescriptionEdit }, 
-                            _ => {}
-                        }
-                    }, 
-                    _ => {}
+                if self.current_mode.is_navigation() {
+                    match key.code {
+                        KeyCode::Char(c) => {
+                            match c {
+                                'w' => { self.current_screen = Screen::WorkspaceSelection }, 
+                                'e' => { self.current_screen = Screen::TimeEntrySelection },
+                                'p' => { self.current_screen = Screen::ProjectSelection },
+                                't' => { self.current_screen = Screen::TagSelection },
+                                'd' => { self.current_screen = Screen::DescriptionEdit }, 
+                                'h' => { self.current_screen = Screen::Home },
+                                'i' => { self.current_mode = AppMode::Edit }, 
+                                _ => {}
+                            } 
+                        }, 
+                        _ => {}
+                    } 
+                } else {
+                    match key.code {
+                        KeyCode::Esc => {
+                            self.current_mode = AppMode::Navigation;
+                        }, 
+                        _ => {}
+                    }
                 }
             }
             _ => {}
