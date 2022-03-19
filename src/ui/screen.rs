@@ -98,7 +98,7 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
     if app.workspaces.items.len() == 0 {
-            app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "));
+            app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "), false);
     }
     app.workspaces.render(f, chunks[1]);
     
@@ -120,7 +120,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
     if app.time_entries.items.len() == 0 {
-        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "));
+        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "), false);
     }
     app.time_entries.render(f, chunks[1]);
 }
@@ -131,7 +131,7 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     if app.projects.items.len() == 0 {
-        app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "));
+        app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "), false);
     }
     app.projects.render(f, chunks[1]);
 
@@ -150,7 +150,7 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     if app.tags.items.len() == 0 {
-        app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "));
+        app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "), true);
     }
     app.tags.render(f, chunks[1]);
 

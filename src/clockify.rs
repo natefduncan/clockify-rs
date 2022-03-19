@@ -72,11 +72,11 @@ impl<'a> App<'a> {
             current_screen: Screen::Home, 
             current_entry_id: None, 
             current_mode: AppMode::Navigation, 
-            workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: ")), 
-            projects: StatefulList::with_items(vec![], String::from("Select a project: ")),
-            tags: StatefulList::with_items(vec![], String::from("Select a tag: ")), 
+            workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: "), false), 
+            projects: StatefulList::with_items(vec![], String::from("Select a project: "), false),
+            tags: StatefulList::with_items(vec![], String::from("Select a tag: "), true), 
             description: InputBox::from("Edit the time entry description: "), 
-            time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: ")), 
+            time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: "), false), 
         }
     }
 
