@@ -66,18 +66,40 @@ impl From<String> for InputBox {
 }
 
 #[derive(Debug, Clone)]
-pub struct StatefulList<T: Display> {
+pub struct StatefulList<T: Display + Id + Clone> {
+    pub selected: Vec<String>, 
+    pub multiselect: bool, 
     pub title: String, 
     pub state: ListState, 
     pub items: Vec<T>
 }
 
-impl<T: Display> StatefulList<T> {
-    pub fn with_items(items: Vec<T>, title: String) -> StatefulList<T> {
+pub trait Id {
+    fn id(&self) -> String; 
+}
+
+impl<T: Display + Id + Clone> StatefulList<T> {
+    pub fn with_items(items: Vec<T>, title: String, multiselect: bool) -> StatefulList<T> {
         StatefulList {
+            selected: vec![],
+            multiselect, 
             state: ListState::default(), 
             items,
             title
+        }
+    }
+
+    pub fn toggle_selected(&mut self) {
+        let selected_item : Option<T> = self.get_selected_item().cloned();
+        if let Some(item) = selected_item.clone() {
+            if let Some(idx) = self.selected.iter().position(|x| *x == item.id()) {
+                self.selected.remove(idx);
+            } else {
+                if !self.multiselect && self.selected.len() > 0 {
+                    self.selected = vec![]; 
+                }
+                self.selected.push(item.id()); 
+            }
         }
     }
 
@@ -109,16 +131,16 @@ impl<T: Display> StatefulList<T> {
         self.state.select(Some(i))
     }
 
-    pub fn get_selected_item(&self) -> &T {
+    pub fn get_selected_item(&self) -> Option<&T> {
         let i = match self.state.selected() {
             Some(i) => i, 
             None => 0
         };
-        return self.items.get(i).unwrap();
+        return self.items.get(i);
     }
 }
 
-impl<T: Display> Component for StatefulList<T> {
+impl<T: Display + Id + Clone> Component for StatefulList<T> {
     fn render<B: Backend>(&mut self, f: &mut Frame<B>, area: Rect) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -131,7 +153,13 @@ impl<T: Display> Component for StatefulList<T> {
             ).split(area); 
         f.render_widget(Paragraph::new(self.title.clone()), chunks[0]); 
         let list_item : Vec<ListItem> = self.items.iter()
-            .map(|i| ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))]))
+            .map(|i| {
+                if self.selected.contains(&i.id()) {
+                    ListItem::new(vec![Spans::from(Span::raw(format!("X - {}", i)))])
+                } else {
+                    ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))])
+                }
+            })
             .collect();
         let list_item = List::new(list_item)
             .block(Block::default().borders(Borders::ALL))
@@ -154,6 +182,9 @@ impl<T: Display> Component for StatefulList<T> {
             KeyCode::Down => {
                 self.next()
             }, 
+            KeyCode::Enter => {
+                self.toggle_selected()
+            }
             _ => {}
         }
         

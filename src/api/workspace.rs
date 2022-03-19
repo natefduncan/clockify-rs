@@ -5,6 +5,7 @@ use crate::api::{
     common::{Rate, Membership}
 }; 
 use serde::{Serialize, Deserialize};
+use crate::ui::components::Id;
 
 // Name is the only required field to create a tag.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,6 +69,12 @@ pub struct Round {
 impl fmt::Display for Workspace {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.name)
+    }
+}
+
+impl Id for Workspace {
+    fn id(&self) -> String {
+        self.id.as_ref().unwrap().clone()
     }
 }
 

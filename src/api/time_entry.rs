@@ -8,6 +8,7 @@ use crate::{
     }
 };
 use serde::{Serialize, Deserialize};
+use crate::ui::components::Id;
 
 // On list or get for TimeEntry, the start and end will show up in
 // TimeInterval.start and TimeInterval.end, not TimeEntry.start and TimeEntry.end
@@ -64,6 +65,12 @@ impl fmt::Display for TimeEntry {
         } else {
             write!(f, "{}", "No Description") 
         }
+    }
+}
+
+impl Id for TimeEntry {
+    fn id(&self) -> String {
+        self.id.as_ref().unwrap().clone()
     }
 }
 

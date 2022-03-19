@@ -1,7 +1,8 @@
 use std::fmt;
 use crate::clockify::Config; 
-use crate::api::{EndPoint}; 
+use crate::api::EndPoint; 
 use serde::{Serialize, Deserialize};
+use crate::ui::components::Id;
 
 // Name is the only required field to create a tag.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,6 +28,12 @@ impl From<&str> for Tag {
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.name)
+    }
+}
+
+impl Id for Tag {
+    fn id(&self) -> String {
+        return self.id.as_ref().unwrap().clone(); 
     }
 }
 

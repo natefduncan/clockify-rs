@@ -5,6 +5,7 @@ use crate::api::{
     task::Task,
     common::{Rate, Membership},
 }; 
+use crate::ui::components::Id;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -71,6 +72,12 @@ impl From<&str> for Project {
 impl fmt::Display for Project {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.name)
+    }
+}
+
+impl Id for Project {
+    fn id(&self) -> String {
+        return self.id.as_ref().unwrap().clone(); 
     }
 }
 

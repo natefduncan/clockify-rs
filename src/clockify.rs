@@ -47,7 +47,7 @@ pub struct App<'a> {
     pub should_quit: bool,
     pub config: Config,
     pub current_screen: Screen, 
-    pub current_entry: Option<TimeEntry>, 
+    pub current_entry_id: Option<String>, 
     pub current_mode: AppMode, 
     pub workspaces: StatefulList<Workspace>,
     pub projects: StatefulList<Project>,
@@ -70,13 +70,13 @@ impl<'a> App<'a> {
             should_quit: false, 
             config: confy::load("clockify").unwrap(), 
             current_screen: Screen::Home, 
-            current_entry: None, 
+            current_entry_id: None, 
             current_mode: AppMode::Navigation, 
-            workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: ")), 
-            projects: StatefulList::with_items(vec![], String::from("Select a project: ")),
-            tags: StatefulList::with_items(vec![], String::from("Select a tag: ")), 
+            workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: "), false), 
+            projects: StatefulList::with_items(vec![], String::from("Select a project: "), false),
+            tags: StatefulList::with_items(vec![], String::from("Select a tag: "), true), 
             description: InputBox::from("Edit the time entry description: "), 
-            time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: ")), 
+            time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: "), false), 
         }
     }
 
