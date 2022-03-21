@@ -87,7 +87,8 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     f.render_widget(Paragraph::new(format!("{}: {}", "Project", project_text)), current_entry_chunks[0]); 
     // Tag
     let tags: Vec<&Tag> = app.tags.get_selected_items();
-    let tag_string = tags.iter().map(|x| x.to_string() + ",").collect::<String>();
+    let tag_string = tags.iter().map(|x| x.to_string() + ", ").collect::<String>();
+    let tag_string = tag_string.trim_end_matches(", ");
     f.render_widget(Paragraph::new(format!("{}: {}", "Tag", tag_string)), current_entry_chunks[1]); 
     // Description
     f.render_widget(Paragraph::new(format!("{}: {}", "Description", app.description.text.clone())), current_entry_chunks[2]); 
