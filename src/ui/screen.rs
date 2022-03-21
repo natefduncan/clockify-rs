@@ -33,6 +33,34 @@ pub fn template_screen<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut 
     
 }
 
+// Refresh workspaces
+pub fn refresh_workspaces(client: &Client, app: &mut App) {
+    if app.workspaces.items.len() == 0 {
+            app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "), false);
+    }
+}
+
+// Refresh projects
+pub fn refresh_projects(client: &Client, app: &mut App) {
+    if app.workspaces.items.len() == 0 {
+            app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "), false);
+    }
+}
+
+// Refresh tags
+pub fn refresh_tags(client: &Client, app: &mut App) {
+    if app.tags.items.len() == 0 {
+        app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "), true);
+    }
+}
+
+// Refresh Time Entries
+pub fn refresh_time_entries(client: &Client, app: &mut App) {
+    if app.time_entries.items.len() == 0 {
+        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "), false);
+    }
+}
+
 // Home
 pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
     // App Title
@@ -98,9 +126,7 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
-    if app.workspaces.items.len() == 0 {
-            app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "), false);
-    }
+    refresh_workspaces(client, app);
     app.workspaces.render(f, chunks[1]);
     
     // Key Event
@@ -120,9 +146,13 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
-    if app.time_entries.items.len() == 0 {
-        app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "), false);
-    }
+    refresh_time_entries(client, app);
+
+    // Refresh data feeds
+    refresh_workspaces(client, app);
+    refresh_projects(client, app);
+    refresh_tags(client, app);
+
     // Time Entry table
     let table = Table::new(
         app.time_entries
@@ -226,9 +256,8 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
-    if app.projects.items.len() == 0 {
-        app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "), false);
-    }
+    refresh_projects(client, app);
+
     app.projects.render(f, chunks[1]);
 
     // Key Event
@@ -245,9 +274,7 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
-    if app.tags.items.len() == 0 {
-        app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "), true);
-    }
+    refresh_tags(client, app);
     app.tags.render(f, chunks[1]);
 
     // Key Event
