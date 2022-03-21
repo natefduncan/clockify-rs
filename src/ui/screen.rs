@@ -5,7 +5,8 @@ use tui::{
     Frame,
     backend::Backend,
     layout::{Constraint, Layout, Rect},
-    widgets::Paragraph
+    widgets::{Paragraph, Table, Row, TableState, Block},
+    style::{Modifier, Style},
 };
 use reqwest::blocking::Client;
 use crate::{
@@ -122,7 +123,70 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     if app.time_entries.items.len() == 0 {
         app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "), false);
     }
-    app.time_entries.render(f, chunks[1]);
+    // Time Entry table
+    let table = Table::new(
+        app.time_entries
+        .items
+        .iter()
+        .map(|entry| {
+            // Project name
+            let mut project = String::new();
+            if let Some(project_id) = &entry.project_id {
+                if let Some(p) = app.projects.get_by_id(project_id.to_string()) {
+                    project = p.to_string();
+                }
+            }
+            // Tag names
+            let mut tags = vec![];
+            if let Some(tag_ids) = &entry.tag_ids {
+                tags = tag_ids
+                    .iter()
+                    .map(|tag_id| {
+                        if let Some(t) = app.tags.get_by_id(tag_id.clone()) {
+                            t.to_string()
+                        } else {
+                            String::from("Unknown")
+                        }
+                    }).collect::<Vec<String>>();
+            }
+            let tag_string = tags.iter().map(|x| x.to_string() + ",").collect::<String>();
+            let tag_string = tag_string.trim_end_matches(",");
+            // Start, end, duration
+            let mut start = String::new();
+            let mut end = String::new();
+            let mut duration = String::new(); 
+            if let Some(time_interval) = &entry.time_interval {
+                // Start
+                if let Some(s) = &time_interval.start {
+                    start = s.clone();
+                }
+
+                // End
+                if let Some(e) = &time_interval.end {
+                    end = e.clone();
+                }
+
+                // Duration
+                if let Some(d) = &time_interval.duration {
+                    duration = d.clone();
+                }
+            }
+            return Row::new(vec![
+                entry.description.as_ref().unwrap().clone(), 
+                project,
+                tag_string.to_owned(), 
+                start, 
+                end,
+                duration
+            ]);
+        })
+    )
+        .block(Block::default().title("Time Entries"))
+        .header(Row::new(vec!["Description", "Project", "Tag(s)", "Start", "End", "Duration"]))
+        .widths(&[Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20)])
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .column_spacing(2);
+    f.render_stateful_widget(table, chunks[1], &mut TableState::default());
 }
 
 // Project Selection

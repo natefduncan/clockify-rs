@@ -89,6 +89,10 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         }
     }
 
+    pub fn get_by_id(&self, id: String) -> Option<&T> {
+        return self.items.iter().find(|x| x.id() == id);
+    }
+
     pub fn toggle_selected(&mut self) {
         let selected_item : Option<T> = self.get_selected_item().cloned();
         if let Some(item) = selected_item.clone() {
@@ -155,7 +159,7 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
         let list_item : Vec<ListItem> = self.items.iter()
             .map(|i| {
                 if self.selected.contains(&i.id()) {
-                    ListItem::new(vec![Spans::from(Span::raw(format!("X - {}", i)))])
+                    ListItem::new(vec![Spans::from(Span::raw(format!(">> {}", i)))])
                 } else {
                     ListItem::new(vec![Spans::from(Span::raw(format!("{}", i)))])
                 }
