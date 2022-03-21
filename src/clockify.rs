@@ -80,6 +80,10 @@ impl<'a> App<'a> {
         }
     }
 
+    pub fn update_based_on_entry(&mut self) {
+
+    }
+
     pub fn key_event(&mut self, key: KeyEvent) {
         match key.modifiers {
             KeyModifiers::CONTROL => {
