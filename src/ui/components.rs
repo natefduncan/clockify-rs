@@ -93,6 +93,10 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         return self.items.iter().find(|x| x.id() == id);
     }
 
+    pub fn get_by_string(&self, string: String) -> Option<&T> {
+        return self.items.iter().find(|x| x.to_string() == string);
+    }
+
     pub fn toggle_selected(&mut self) {
         let selected_item : Option<T> = self.get_selected_item().cloned();
         if let Some(item) = selected_item.clone() {
@@ -141,6 +145,10 @@ impl<T: Display + Id + Clone> StatefulList<T> {
             None => 0
         };
         return self.items.get(i);
+    }
+
+    pub fn get_selected_items(&self) -> Vec<&T> {
+        return self.items.iter().filter(|x| self.selected.contains(&x.id())).collect::<Vec<&T>>();
     }
 }
 

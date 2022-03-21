@@ -58,17 +58,17 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     };
     f.render_widget(Paragraph::new(format!("{}: {}", "Project", project_text)), current_entry_chunks[0]); 
     // Tag
-    let tag: Option<&Tag> = app.tags.get_selected_item();
-    let tag_text : String = match tag {
-        Some(tag) => tag.name.clone(), 
-        None => String::from("None")
-    };
-    f.render_widget(Paragraph::new(format!("{}: {}", "Tag", tag_text)), current_entry_chunks[1]); 
+    let tags: Vec<&Tag> = app.tags.get_selected_items();
+    let tag_string = tags.iter().map(|x| x.to_string() + ",").collect::<String>();
+    f.render_widget(Paragraph::new(format!("{}: {}", "Tag", tag_string)), current_entry_chunks[1]); 
     // Description
     f.render_widget(Paragraph::new(format!("{}: {}", "Description", app.description.text.clone())), current_entry_chunks[2]); 
 
     if let Some(time_entry_id) = app.current_entry_id.clone() {
-        let current_time : TimeEntry = TimeEntry::get(client, &app.config, &time_entry_id, None).unwrap(); 
+        let current_time = client.get(format!("{}/workspaces/{}/time-entries/{}", app.config.base_url, app.config.workspace_id.as_ref().unwrap().clone(), time_entry_id))
+            .header("X-API-KEY", app.config.api_key.as_ref().unwrap().clone())
+            .send().unwrap()
+            .json::<TimeEntry>().unwrap();
         // Start
         f.render_widget(Paragraph::new(format!("{}: {}", "Start: ", current_time.time_interval.clone().unwrap().start.unwrap())), current_entry_chunks[3]); 
         // End
@@ -186,7 +186,39 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
         .widths(&[Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20)])
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .column_spacing(2);
-    f.render_stateful_widget(table, chunks[1], &mut TableState::default());
+    // Table State
+    let mut state = TableState::default();
+    if let Some(i) = app.time_entries.state.selected() {
+        state.select(Some(i));
+    }
+    f.render_stateful_widget(table, chunks[1], &mut state);
+
+    // Key Event
+    if let Some(event) = key {
+        app.time_entries.key_event(event);
+        match event.code {
+            KeyCode::Enter => {
+                let time_entry : &TimeEntry = app.time_entries.get_selected_item().unwrap();
+                // Change project
+                if let Some(project_id) = &time_entry.project_id {
+                    app.projects.selected = vec![project_id.clone()];
+                }
+                // Change tags
+                if let Some(tag_ids) = &time_entry.tag_ids {
+                    app.tags.selected = tag_ids.clone();
+                }
+                // Change description
+                app.description.text = time_entry.description.clone().unwrap().clone();
+                
+                // Change current_entry_id
+                app.current_entry_id = time_entry.id.clone();
+
+                // Change to home screen
+                app.current_screen = Screen::Home;
+            }, 
+            _ => {}
+        }
+    }
 }
 
 // Project Selection
