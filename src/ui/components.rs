@@ -175,7 +175,7 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
             .collect();
         let list_item = List::new(list_item)
             .block(Block::default().borders(Borders::ALL))
-            .highlight_style(Style::default().add_modifier(Modifier::BOLD));
+            .highlight_style(Style::default().add_modifier(Modifier::BOLD).add_modifier(Modifier::UNDERLINED).add_modifier(Modifier::ITALIC));
         f.render_stateful_widget(list_item, chunks[1], &mut self.state)
     }
 

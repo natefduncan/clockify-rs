@@ -184,7 +184,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
         .block(Block::default().title("Time Entries"))
         .header(Row::new(vec!["Description", "Project", "Tag(s)", "Start", "End", "Duration"]))
         .widths(&[Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20)])
-        .highlight_style(Style::default().add_modifier(Modifier::BOLD))
+        .highlight_style(Style::default().add_modifier(Modifier::BOLD).add_modifier(Modifier::ITALIC).add_modifier(Modifier::UNDERLINED))
         .column_spacing(2);
     // Table State
     let mut state = TableState::default();
