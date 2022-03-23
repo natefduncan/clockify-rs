@@ -3,10 +3,10 @@ use crate::{
         tag::Tag, 
         project::Project, 
         time_entry::TimeEntry, 
-        workspace::Workspace,
+        workspace::Workspace, task::Task,
     },
     ui::{
-        components::{StatefulList, InputBox},
+        components::{StatefulList, InputBox, Id},
         Screen
     }
 };
@@ -51,6 +51,7 @@ pub struct App<'a> {
     pub current_mode: AppMode, 
     pub workspaces: StatefulList<Workspace>,
     pub projects: StatefulList<Project>,
+    pub tasks: StatefulList<Task>, 
     pub tags: StatefulList<Tag>, 
     pub description: InputBox, 
     pub time_entries: StatefulList<TimeEntry>,
@@ -73,6 +74,7 @@ impl<'a> App<'a> {
             current_entry_id: None, 
             current_mode: AppMode::Navigation, 
             workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: "), false), 
+            tasks: StatefulList::with_items(vec![], String::from("Select a task: "), false), 
             projects: StatefulList::with_items(vec![], String::from("Select a project: "), false),
             tags: StatefulList::with_items(vec![], String::from("Select a tag: "), true), 
             description: InputBox::from("Edit the time entry description: "), 
@@ -105,7 +107,18 @@ impl<'a> App<'a> {
                                 'w' => { self.current_screen = Screen::WorkspaceSelection }, 
                                 'e' => { self.current_screen = Screen::TimeEntrySelection },
                                 'p' => { self.current_screen = Screen::ProjectSelection },
-                                't' => { self.current_screen = Screen::TagSelection },
+                                'g' => { self.current_screen = Screen::TagSelection },
+                                't' => { 
+                                    self.current_screen = Screen::TaskSelection;
+                                    // If selected project has changed, clear tasks
+                                    if let Some(config_project_id) = &self.config.project_id {
+                                        if let Some(selected_project) = self.projects.get_selected_item() {
+                                            if config_project_id.clone() != selected_project.clone().id() {
+                                                self.tasks.items = vec![];
+                                            }
+                                        }
+                                    }
+                                },
                                 'd' => { self.current_screen = Screen::DescriptionEdit }, 
                                 'h' => { self.current_screen = Screen::Home },
                                 'i' => { self.current_mode = AppMode::Edit }, 
@@ -133,6 +146,7 @@ pub struct Config {
     pub base_url: String,
     pub api_key: Option<String>, 
     pub workspace_id: Option<String>,
+    pub project_id: Option<String>, 
     pub user_id: Option<String>
 }
 
@@ -142,6 +156,7 @@ impl Default for Config {
             base_url: String::from("https://api.clockify.me/api/v1"), 
             api_key: None, 
             workspace_id: None,
+            project_id: None,
             user_id: None
         }
     }

@@ -15,10 +15,10 @@ use crate::{
         EndPoint,
         user::User, 
         time_entry::TimeEntry, 
-        workspace::Workspace, project::Project, tag::Tag
+        workspace::Workspace, project::Project, tag::Tag, task::Task
     }, 
     ui::{
-        components::{StatefulList, Component}, 
+        components::{StatefulList, Component, Id}, 
         Screen
     } 
 };
@@ -42,8 +42,15 @@ pub fn refresh_workspaces(client: &Client, app: &mut App) {
 
 // Refresh projects
 pub fn refresh_projects(client: &Client, app: &mut App) {
-    if app.workspaces.items.len() == 0 {
+    if app.projects.items.len() == 0 {
             app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "), false);
+    }
+}
+
+// Refresh tasks
+pub fn refresh_tasks(client: &Client, app: &mut App) {
+    if app.tasks.items.len() == 0 {
+        app.tasks = StatefulList::with_items(Task::list(client, &app.config, None).unwrap(), String::from("Select a task: "), false);
     }
 }
 
@@ -70,7 +77,8 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     // Display current time entry
     let current_entry_chunks = Layout::default()
         .constraints([
-            Constraint::Length(1), // Project 
+            Constraint::Length(1), // Project
+            Constraint::Length(1), // Task
             Constraint::Length(1), // Tag
             Constraint::Length(1), // Description
             Constraint::Length(1), // Start
@@ -82,16 +90,23 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     let project: Option<&Project> = app.projects.get_selected_item();
     let project_text : String = match project {
         Some(project) => project.name.clone(), 
-        None => String::from("None")
+        None => String::from("")
     };
     f.render_widget(Paragraph::new(format!("{}: {}", "Project", project_text)), current_entry_chunks[0]); 
+    // Task
+    let task: Option<&Task> = app.tasks.get_selected_item();
+    let task_text : String = match task {
+        Some(t) => t.name.clone(), 
+        None => String::from("")
+    };
+    f.render_widget(Paragraph::new(format!("{}: {}", "Task", task_text)), current_entry_chunks[1]);
     // Tag
     let tags: Vec<&Tag> = app.tags.get_selected_items();
     let tag_string = tags.iter().map(|x| x.to_string() + ", ").collect::<String>();
     let tag_string = tag_string.trim_end_matches(", ");
-    f.render_widget(Paragraph::new(format!("{}: {}", "Tag", tag_string)), current_entry_chunks[1]); 
+    f.render_widget(Paragraph::new(format!("{}: {}", "Tag", tag_string)), current_entry_chunks[2]); 
     // Description
-    f.render_widget(Paragraph::new(format!("{}: {}", "Description", app.description.text.clone())), current_entry_chunks[2]); 
+    f.render_widget(Paragraph::new(format!("{}: {}", "Description", app.description.text.clone())), current_entry_chunks[3]); 
 
     if let Some(time_entry_id) = app.current_entry_id.clone() {
         let current_time = client.get(format!("{}/workspaces/{}/time-entries/{}", app.config.base_url, app.config.workspace_id.as_ref().unwrap().clone(), time_entry_id))
@@ -99,11 +114,11 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
             .send().unwrap()
             .json::<TimeEntry>().unwrap();
         // Start
-        f.render_widget(Paragraph::new(format!("{}: {}", "Start: ", current_time.time_interval.clone().unwrap().start.unwrap())), current_entry_chunks[3]); 
+        f.render_widget(Paragraph::new(format!("{}: {}", "Start: ", current_time.time_interval.clone().unwrap().start.unwrap())), current_entry_chunks[4]); 
         // End
         let end : Option<String> = current_time.time_interval.clone().unwrap().end;
         if let Some(e) = end {
-            f.render_widget(Paragraph::new(format!("{}: {}", "End: ", e)), current_entry_chunks[4]); 
+            f.render_widget(Paragraph::new(format!("{}: {}", "End: ", e)), current_entry_chunks[5]); 
         }
     }
 
@@ -167,6 +182,13 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
                     project = p.to_string();
                 }
             }
+            // Task name
+            let mut task = String::new();
+            if let Some(task_id) = &entry.task_id {
+                if let Some(t) = app.tasks.get_by_id(task_id.to_string()) {
+                    task = t.to_string();
+                }
+            }
             // Tag names
             let mut tags = vec![];
             if let Some(tag_ids) = &entry.tag_ids {
@@ -205,6 +227,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
             return Row::new(vec![
                 entry.description.as_ref().unwrap().clone(), 
                 project,
+                task, 
                 tag_string.to_owned(), 
                 start, 
                 end,
@@ -213,8 +236,8 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
         })
     )
         .block(Block::default().title("Time Entries"))
-        .header(Row::new(vec!["Description", "Project", "Tag(s)", "Start", "End", "Duration"]))
-        .widths(&[Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20)])
+        .header(Row::new(vec!["Description", "Project", "Task", "Tag(s)", "Start", "End", "Duration"]))
+        .widths(&[Constraint::Percentage(20), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16)])
         .highlight_style(Style::default().add_modifier(Modifier::BOLD).add_modifier(Modifier::ITALIC).add_modifier(Modifier::UNDERLINED))
         .column_spacing(2);
     // Table State
@@ -269,6 +292,31 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
         }
     }
 }
+
+// Task Selection
+pub fn task_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {
+    // App Title
+    let chunks = template_screen(f, client, app);
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
+    // Ensure that a project is set in the config
+    refresh_projects(client, app);
+    if let Some(project_id) = app.projects.get_selected_item() {
+        app.config.project_id = Some(project_id.clone().id());
+    } else {
+        app.config.project_id = Some(app.projects.items.get(0).unwrap().clone().id()); 
+    }
+    refresh_tasks(client, app);
+    app.tasks.render(f, chunks[1]);
+
+    // Key Event
+    if let Some(event) = key {
+        app.tasks.key_event(event);
+        match event.code {
+            _ => {}
+        }
+    }
+}
+
 
 // Tag Selection
 pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: Option<KeyEvent>) {

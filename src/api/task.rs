@@ -5,18 +5,18 @@ use crate::{
     api::{
         EndPoint, 
         common::Rate
-    }
+    }, ui::components::Id
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Task {
     pub id: String, 
     pub name: String,
-    pub project_id: String, 
-    pub assignee_ids: Vec<String>, 
-    pub assignee_id: String, 
-    pub user_group_ids: Vec<String>, 
-    pub estimate: String, 
+    pub project_id: Option<String>, 
+    pub assignee_ids: Option<Vec<String>>, 
+    pub assignee_id: Option<String>, 
+    pub user_group_ids: Option<Vec<String>>, 
+    pub estimate: Option<String>, 
     pub status: String, 
     pub duration: Option<String>, 
     pub billable: bool, 
@@ -38,13 +38,17 @@ impl fmt::Display for Task {
     }
 }
 
+impl Id for Task {
+    fn id(&self) -> String {
+        return self.id.clone();
+    }
+}
+
 impl EndPoint for Task {
     fn endpoint(config: &Config) -> String {
-        // FIXME
         format!("/workspaces/{}/projects/{}/tasks", 
             config.workspace_id.as_ref().unwrap().clone(),
-            // config.project_id.as_ref().unwrap().clone()
-            "project_id"
+            config.project_id.as_ref().unwrap().clone()
         )   
     }
 }
