@@ -1,5 +1,6 @@
 use crate::{
     api::{
+        EndPoint,
         tag::Tag, 
         project::Project, 
         time_entry::TimeEntry, 
@@ -11,7 +12,9 @@ use crate::{
     }
 };
 
+use chrono::prelude::*;
 use crossterm::event::{KeyEvent, KeyModifiers, KeyCode};
+use reqwest::blocking::Client;
 use serde::{Serialize, Deserialize};
 use std::fmt; 
 
@@ -82,11 +85,74 @@ impl<'a> App<'a> {
         }
     }
 
-    pub fn update_based_on_entry(&mut self) {
-
+    pub fn get_current_entry(&mut self, client: &Client) -> Option<TimeEntry> {
+        if let Some(time_entry_id) = self.current_entry_id.clone() {
+            return client.get(format!("{}/workspaces/{}/time-entries/{}", self.config.base_url, self.config.workspace_id.as_ref().unwrap().clone(), time_entry_id))
+                .header("X-API-KEY", self.config.api_key.as_ref().unwrap().clone())
+                .send().unwrap()
+                .json::<TimeEntry>().ok();
+        } else {
+            return None;
+        }
     }
 
-    pub fn key_event(&mut self, key: KeyEvent) {
+    pub fn get_current_entry_with_selections(&mut self, client: &Client) -> TimeEntry {
+        let mut time_entry : TimeEntry; 
+        if let Some(t) = &self.get_current_entry(client) {
+            time_entry = t.clone();
+        } else {
+            time_entry = TimeEntry::default();
+        }
+        // Project
+        if let Some(project) = &self.projects.get_selected_item() {
+            time_entry.project_id = Some(project.id());
+        }
+        // Task
+        if let Some(task) = &self.tasks.get_selected_item() {
+            time_entry.task_id = Some(task.id());
+        }
+        // Tags
+        time_entry.tag_ids = Some(self.tags.get_selected_items().iter().map(|tag| tag.id()).collect::<Vec<String>>());
+        // Description
+        time_entry.description = Some(self.description.text.clone());
+        return time_entry.clone();
+    }
+
+    pub fn current_formatted_time(&self) -> String {
+        let utc: DateTime<Utc> = Utc::now();
+        format!("{}", utc.format("%Y-%m-%dT%H:%M:%S.000Z"))
+    }
+
+    pub fn start_entry(&mut self, client: &Client) {
+        // Send POST new time entry with only start
+        let mut time_entry = self.get_current_entry_with_selections(client);
+        // Replace start and end times
+        time_entry.id = None;
+        time_entry.end = None;
+        time_entry.time_interval = None;
+        // Add current start time
+        time_entry.start = Some(self.current_formatted_time());
+        
+        // POST request to create
+        let time_entry = TimeEntry::create(time_entry, client, &self.config, None).unwrap();
+        self.current_entry_id = time_entry.id;
+    }
+
+    pub fn stop_entry(&mut self, client: &Client) {
+        // Send PATCH with only end
+        let mut time_entry = TimeEntry::default(); 
+        time_entry.end = Some(self.current_formatted_time());
+        TimeEntry::patch(time_entry, client, &self.config, None).unwrap();
+    }
+
+    pub fn update_entry(&mut self, client: &Client) {
+        // Send PATCH with only end
+        let time_entry = self.get_current_entry_with_selections(client);
+        // POST request to create
+        TimeEntry::update(time_entry, client, &self.config, None).unwrap();
+    }
+
+    pub fn key_event(&mut self, key: KeyEvent, client: &Client) {
         match key.modifiers {
             KeyModifiers::CONTROL => {
                match key.code {
@@ -105,10 +171,10 @@ impl<'a> App<'a> {
                         KeyCode::Char(c) => {
                             match c {
                                 'w' => { self.current_screen = Screen::WorkspaceSelection }, 
-                                'e' => { self.current_screen = Screen::TimeEntrySelection },
+                                't' => { self.current_screen = Screen::TimeEntrySelection },
                                 'p' => { self.current_screen = Screen::ProjectSelection },
                                 'g' => { self.current_screen = Screen::TagSelection },
-                                't' => { 
+                                'y' => { 
                                     self.current_screen = Screen::TaskSelection;
                                     // If selected project has changed, clear tasks
                                     if let Some(config_project_id) = &self.config.project_id {
@@ -122,6 +188,9 @@ impl<'a> App<'a> {
                                 'd' => { self.current_screen = Screen::DescriptionEdit }, 
                                 'h' => { self.current_screen = Screen::Home },
                                 'i' => { self.current_mode = AppMode::Edit }, 
+                                'u' => { self.update_entry(client) },
+                                's' => { self.start_entry(client) }, 
+                                'e' => { self.stop_entry(client) },
                                 _ => {}
                             } 
                         }, 

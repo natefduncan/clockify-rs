@@ -116,6 +116,39 @@ pub trait EndPoint {
         request.header("X-API-KEY", config.api_key.as_ref().unwrap().clone())
     }
 
+    fn create(self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, EndpointError>
+        where Self: Sized + Serialize, for <'de> Self: serde::de::Deserialize<'de> {
+            let url : String = Self::format_url(None, params, config); 
+            let request : RequestBuilder = Self::set_api_key(client.post(url), config);
+            let response = request
+                .json(&self)
+                .send()?
+                .json::<Self>()?; 
+            Ok(response)
+    }
+
+    fn patch(data: Self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, EndpointError> 
+        where Self: Sized + Serialize, for <'de> Self: serde::de::Deserialize<'de> {
+            let url : String = Self::format_url(None, params, config); 
+            let request : RequestBuilder = Self::set_api_key(client.patch(url), config);
+            let response = request
+                .json(&data)
+                .send()?
+                .json::<Self>()?; 
+            Ok(response)
+    }
+
+    fn update(data: Self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, EndpointError> 
+        where Self: Sized + Serialize, for <'de> Self: serde::de::Deserialize<'de> {
+            let url : String = Self::format_url(None, params, config); 
+            let request : RequestBuilder = Self::set_api_key(client.put(url), config);
+            let response = request
+                .json(&data)
+                .send()?
+                .json::<Self>()?; 
+            Ok(response)
+    }
+
     fn list(client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Vec<Self>, EndpointError>  
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
         let url : String = Self::format_url(None, params, config); 

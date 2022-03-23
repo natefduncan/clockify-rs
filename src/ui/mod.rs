@@ -104,7 +104,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
                     }
                 })?; 
                 // App key events
-                app.key_event(key)
+                app.key_event(key, client)
             }
         }
         if last_tick.elapsed() >= tick_rate {
