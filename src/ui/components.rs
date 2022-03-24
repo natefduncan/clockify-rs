@@ -97,9 +97,9 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         return self.items.iter().find(|x| x.to_string() == string);
     }
 
-    pub fn toggle_selected(&mut self) {
-        let selected_item : Option<T> = self.get_selected_item().cloned();
-        if let Some(item) = selected_item.clone() {
+    pub fn toggle_highlighted(&mut self) {
+        let highlighted_item : Option<T> = self.get_highlighted_item().cloned();
+        if let Some(item) = highlighted_item.clone() {
             if let Some(idx) = self.selected.iter().position(|x| *x == item.id()) {
                 self.selected.remove(idx);
             } else {
@@ -202,7 +202,7 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
                 self.next()
             }, 
             KeyCode::Enter => {
-                self.toggle_selected()
+                self.toggle_highlighted()
             }
             _ => {}
         }
