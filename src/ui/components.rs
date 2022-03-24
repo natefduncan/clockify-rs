@@ -139,12 +139,19 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         self.state.select(Some(i))
     }
 
+    pub fn get_highlighted_item(&self) -> Option<&T> {
+        match self.state.selected() {
+            Some(x) => {
+                self.items.get(x)
+            }, 
+            None => {
+                None
+            },
+        }
+    }
+
     pub fn get_selected_item(&self) -> Option<&T> {
-        let i = match self.state.selected() {
-            Some(i) => i, 
-            None => 0
-        };
-        return self.items.get(i);
+        return self.items.iter().filter(|x| self.selected.contains(&x.id())).collect::<Vec<&T>>().get(0).cloned();
     }
 
     pub fn get_selected_items(&self) -> Vec<&T> {

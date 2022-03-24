@@ -252,7 +252,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
         app.time_entries.key_event(event);
         match event.code {
             KeyCode::Enter => {
-                let time_entry : &TimeEntry = app.time_entries.get_selected_item().unwrap();
+                let time_entry : &TimeEntry = app.time_entries.get_highlighted_item().unwrap();
                 // Change project
                 if let Some(project_id) = &time_entry.project_id {
                     app.projects.selected = vec![project_id.clone()];
