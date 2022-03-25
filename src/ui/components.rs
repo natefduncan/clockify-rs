@@ -89,6 +89,10 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         }
     }
 
+    pub fn clear_selected(&mut self) {
+        self.selected = vec![];
+    }
+
     pub fn get_by_id(&self, id: String) -> Option<&T> {
         return self.items.iter().find(|x| x.id() == id);
     }

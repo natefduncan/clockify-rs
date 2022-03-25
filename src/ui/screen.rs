@@ -152,6 +152,12 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
             KeyCode::Enter => {
                 app.config.workspace_id = app.workspaces.get_selected_item().unwrap().id.clone();
             }, 
+            KeyCode::Char(c) => {
+                match c {
+                    'c' => app.workspaces.clear_selected(),
+                    _ => {} 
+                }
+            }, 
             _ => {}
         }
     }
@@ -288,6 +294,12 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     if let Some(event) = key {
         app.projects.key_event(event);
         match event.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'c' => app.projects.clear_selected(),
+                    _ => {} 
+                }
+            },            
             _ => {}
         }
     }
@@ -312,6 +324,12 @@ pub fn task_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut A
     if let Some(event) = key {
         app.tasks.key_event(event);
         match event.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'c' => app.tasks.clear_selected(),
+                    _ => {} 
+                }
+            }, 
             _ => {}
         }
     }
@@ -330,6 +348,12 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
     if let Some(event) = key {
         app.tags.key_event(event);
         match event.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'c' => app.tags.clear_selected(),
+                    _ => {} 
+                }
+            }, 
             _ => {}
         }
     }
@@ -351,6 +375,12 @@ pub fn description_input<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
         }
         match event.code {
             KeyCode::Enter => { app.current_screen = Screen::Home },
+            KeyCode::Char(c) => {
+                match c {
+                    'c' => { app.description.text = String::new() },
+                    _ => {} 
+                }
+            }, 
             _ => {}
         }
     }
