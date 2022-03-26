@@ -147,18 +147,12 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
     
     // Key Event
     if let Some(event) = key {
-        app.workspaces.key_event(event);
+        app.workspaces.key_event(event, &app.current_mode);
         match event.code {
             KeyCode::Enter => {
                 app.config.workspace_id = app.workspaces.get_selected_item().unwrap().id.clone();
             }, 
-            KeyCode::Char(c) => {
-                match c {
-                    'c' => app.workspaces.clear_selected(),
-                    _ => {} 
-                }
-            }, 
-            _ => {}
+           _ => {}
         }
     }
 }
@@ -255,7 +249,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
 
     // Key Event
     if let Some(event) = key {
-        app.time_entries.key_event(event);
+        app.time_entries.key_event(event, &app.current_mode);
         match event.code {
             KeyCode::Enter => {
                 let time_entry : &TimeEntry = app.time_entries.get_highlighted_item().unwrap();
@@ -292,17 +286,8 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
 
     // Key Event
     if let Some(event) = key {
-        app.projects.key_event(event);
-        match event.code {
-            KeyCode::Char(c) => {
-                match c {
-                    'c' => app.projects.clear_selected(),
-                    _ => {} 
-                }
-            },            
-            _ => {}
-        }
-    }
+        app.projects.key_event(event, &app.current_mode);
+   }
 }
 
 // Task Selection
@@ -322,17 +307,8 @@ pub fn task_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut A
 
     // Key Event
     if let Some(event) = key {
-        app.tasks.key_event(event);
-        match event.code {
-            KeyCode::Char(c) => {
-                match c {
-                    'c' => app.tasks.clear_selected(),
-                    _ => {} 
-                }
-            }, 
-            _ => {}
-        }
-    }
+        app.tasks.key_event(event, &app.current_mode);
+   }
 }
 
 
@@ -346,17 +322,8 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
 
     // Key Event
     if let Some(event) = key {
-        app.tags.key_event(event);
-        match event.code {
-            KeyCode::Char(c) => {
-                match c {
-                    'c' => app.tags.clear_selected(),
-                    _ => {} 
-                }
-            }, 
-            _ => {}
-        }
-    }
+        app.tags.key_event(event, &app.current_mode);
+   }
 }
 
 // Description Input
@@ -370,17 +337,9 @@ pub fn description_input<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
 
     // Key Event
     if let Some(event) = key {
-        if app.current_mode.is_edit() {
-            app.description.key_event(event); 
-        }
+        app.description.key_event(event, &app.current_mode); 
         match event.code {
             KeyCode::Enter => { app.current_screen = Screen::Home },
-            KeyCode::Char(c) => {
-                match c {
-                    'c' => { app.description.text = String::new() },
-                    _ => {} 
-                }
-            }, 
             _ => {}
         }
     }

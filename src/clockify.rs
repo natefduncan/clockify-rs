@@ -21,15 +21,22 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub enum AppMode {
     Navigation, 
-    Edit
+    Edit, 
+    Search,
 }
 
 impl fmt::Display for AppMode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_navigation() {
-            write!(f, "{}", "Navigation")
-        } else {
-            write!(f, "{}", "Edit")
+        match self {
+            AppMode::Navigation => {
+                write!(f, "{}", "Navigation")
+            },
+            AppMode::Edit => {
+                write!(f, "{}", "Edit")
+            }, 
+            AppMode::Search => {
+                write!(f, "{}", "Search")
+            }
         }
     }
 }
@@ -41,6 +48,10 @@ impl AppMode {
     
     pub fn is_edit(&self) -> bool {
         return matches!(&self, AppMode::Edit);
+    }
+
+    pub fn is_search(&self) -> bool {
+        return matches!(&self, AppMode::Search);
     }
 }
 
@@ -188,6 +199,7 @@ impl<'a> App<'a> {
                                 'd' => { self.current_screen = Screen::DescriptionEdit }, 
                                 'h' => { self.current_screen = Screen::Home },
                                 'i' => { self.current_mode = AppMode::Edit }, 
+                                '/' => { self.current_mode = AppMode::Search },
                                 'u' => { self.update_entry(client) },
                                 's' => { self.start_entry(client) }, 
                                 'e' => { self.stop_entry(client) },
