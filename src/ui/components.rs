@@ -215,7 +215,14 @@ impl<T: Display + Id + Clone> StatefulList<T> {
     pub fn get_highlighted_item(&self) -> Option<&T> {
         match self.state.selected() {
             Some(x) => {
-                self.items.get(x)
+                let mut items = vec![];
+                if self.search_text.is_empty() {
+                    items = self.items.iter().map(|x| x.clone()).collect(); // FIXME
+                } else {
+                    items = self.search(&self.search_text);
+                }
+                let highlighted_item = items.get(x).unwrap();
+                return self.items.iter().find(|x| x.id() == highlighted_item.id());
             }, 
             None => {
                 None
@@ -243,7 +250,11 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
                 Constraint::Min(0),
                 ].as_ref()
             ).split(area); 
-        f.render_widget(Paragraph::new(self.title.clone()), chunks[0]); 
+        let mut title = self.title.clone(); 
+        if !self.search_text.is_empty() {
+            title = format!("{}{}", title, self.search_text);
+        }
+        f.render_widget(Paragraph::new(title), chunks[0]); 
         let mut items = vec![];
         if self.search_text.is_empty() {
             items = self.items.iter().map(|x| x.clone()).collect(); // FIXME
@@ -268,6 +279,7 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
     fn key_event(&mut self, key: KeyEvent, mode: &AppMode) {
         match mode {
             AppMode::Search => {
+                self.state.select(Some(0));
                 match key.code {
                     KeyCode::Char(c) => {
                         self.search_text = format!("{}{}", self.search_text, c);
@@ -275,7 +287,7 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
                     KeyCode::Backspace => {
                         self.search_text.pop();
                     }, 
-                    _ => {}
+                   _ => {}
                 }
             },
             AppMode::Navigation => {
@@ -295,7 +307,8 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
                         self.next()
                     }, 
                     KeyCode::Enter => {
-                        self.toggle_highlighted()
+                        self.toggle_highlighted();
+                        self.search_text = String::new();
                     }
                     _ => {}
                 }
