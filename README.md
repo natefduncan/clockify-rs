@@ -2,7 +2,7 @@
 Clockify TUI written in Rust
 
 ## Installation
-`cargo install --path .`
+`cargo install clockify`
 
 ## Usage
 `clockify -a <API_KEY>`
