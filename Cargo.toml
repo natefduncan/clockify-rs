@@ -2,8 +2,11 @@
 name = "clockify"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+description = "Basic TUI for Clockify time tracking application"
+homepage = "https://github.com/natefduncan/clockify-rs"
+repository = "https://github.com/natefduncan/clockify-rs"
+readme = "README.md"
 
 [dependencies]
 aho-corasick = "0.7.18"
