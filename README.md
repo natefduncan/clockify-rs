@@ -1,19 +1,30 @@
 # Clockify TUI
 Clockify TUI written in Rust
 
+## Installation
+`cargo install --path .`
+
+## Usage
+`clockify -a <API_KEY>`
+
+Note: The API Key only needs to be set the first time the program is executed.
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
-| CTRL + t | Go to Tag selection screen. |
-| CTRL + w | Go to Workspace selection screen. |
-| CTRL + p | Go to Project selection screen. |
-| CTRL + w | Go to Time Entry selection screen. |
+| t | Go to Time Entry selection screen. |
+| w | Go to Workspace selection screen. |
+| p | Go to Project selection screen. |
+| g | Go to Tag selection screen. |
+| y | Go to Task selection screen. |
 | CTRL + q | Quit the application. |
 | i | Enter Edit mode |
-| ESC | Exit Edit mode |
+| / | Enter Search mode |
+| ESC | Exit Edit or Search mode |
 | j | Navigate down |
-| k | Navigate up | 
+| k | Navigate up |
+| c | Clear selections |
 
 ## Endpoints
 - [ ] Client
