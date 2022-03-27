@@ -18,6 +18,7 @@ Note: The API Key only needs to be set the first time the program is executed.
 | p | Go to Project selection screen. |
 | g | Go to Tag selection screen. |
 | y | Go to Task selection screen. |
+| h | Go to Home screen. |
 | CTRL + q | Quit the application. |
 | i | Enter Edit mode |
 | / | Enter Search mode |
@@ -25,6 +26,8 @@ Note: The API Key only needs to be set the first time the program is executed.
 | j | Navigate down |
 | k | Navigate up |
 | c | Clear selections |
+| s | Start timer (from Home screen)
+| e | End timer (from Home screen)
 
 ## Endpoints
 - [ ] Client
