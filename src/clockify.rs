@@ -203,7 +203,7 @@ impl<'a> App<'a> {
                                 'u' => { self.update_entry(client) },
                                 's' => { self.start_entry(client) }, 
                                 'e' => { self.stop_entry(client) },
-                                _ => {}
+                               _ => {}
                             } 
                         }, 
                         _ => {}

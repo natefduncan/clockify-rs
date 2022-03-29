@@ -34,36 +34,36 @@ pub fn template_screen<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut 
 }
 
 // Refresh workspaces
-pub fn refresh_workspaces(client: &Client, app: &mut App) {
-    if app.workspaces.items.len() == 0 {
+pub fn refresh_workspaces(client: &Client, app: &mut App, force: bool) {
+    if app.workspaces.items.len() == 0 || force {
             app.workspaces = StatefulList::with_items(Workspace::list(client, &app.config, None).unwrap(), String::from("Select a workspace: "), false);
     }
 }
 
 // Refresh projects
-pub fn refresh_projects(client: &Client, app: &mut App) {
-    if app.projects.items.len() == 0 {
+pub fn refresh_projects(client: &Client, app: &mut App, force: bool) {
+    if app.projects.items.len() == 0 || force {
             app.projects = StatefulList::with_items(Project::list(client, &app.config, None).unwrap(), String::from("Select a project: "), false);
     }
 }
 
 // Refresh tasks
-pub fn refresh_tasks(client: &Client, app: &mut App) {
-    if app.tasks.items.len() == 0 {
+pub fn refresh_tasks(client: &Client, app: &mut App, force: bool) {
+    if app.tasks.items.len() == 0 || force {
         app.tasks = StatefulList::with_items(Task::list(client, &app.config, None).unwrap(), String::from("Select a task: "), false);
     }
 }
 
 // Refresh tags
-pub fn refresh_tags(client: &Client, app: &mut App) {
-    if app.tags.items.len() == 0 {
+pub fn refresh_tags(client: &Client, app: &mut App, force: bool) {
+    if app.tags.items.len() == 0 || force {
         app.tags = StatefulList::with_items(Tag::list(client, &app.config, None).unwrap(), String::from("Select a tag: "), true);
     }
 }
 
 // Refresh Time Entries
-pub fn refresh_time_entries(client: &Client, app: &mut App) {
-    if app.time_entries.items.len() == 0 {
+pub fn refresh_time_entries(client: &Client, app: &mut App, force: bool) {
+    if app.time_entries.items.len() == 0 || force {
         app.time_entries = StatefulList::with_items(TimeEntry::list(client, &app.config, None).unwrap(), String::from("Select a time entry: "), false);
     }
 }
@@ -142,7 +142,7 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
-    refresh_workspaces(client, app);
+    refresh_workspaces(client, app, false);
     app.workspaces.render(f, chunks[1]);
     
     // Key Event
@@ -151,6 +151,14 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
         match event.code {
             KeyCode::Enter => {
                 app.config.workspace_id = app.workspaces.get_selected_item().unwrap().id.clone();
+            }, 
+            KeyCode::Char(c) => {
+                match c {
+                    'r' => {
+                        refresh_workspaces(client, app, true);
+                    }, 
+                    _ => {}
+                }
             }, 
            _ => {}
         }
@@ -162,12 +170,12 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]); 
-    refresh_time_entries(client, app);
+    refresh_time_entries(client, app, false);
 
     // Refresh data feeds
-    refresh_workspaces(client, app);
-    refresh_projects(client, app);
-    refresh_tags(client, app);
+    refresh_workspaces(client, app, false);
+    refresh_projects(client, app, false);
+    refresh_tags(client, app, false);
 
     // Time Entry table
     let mut title = app.time_entries.title.clone();
@@ -278,6 +286,17 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
                 // Change to home screen
                 app.current_screen = Screen::Home;
             }, 
+            KeyCode::Char(c) => {
+                match c {
+                    'r' => {
+                        refresh_time_entries(client, app, true);
+                        refresh_workspaces(client, app, true);
+                        refresh_projects(client, app, true);
+                        refresh_tags(client, app, true);
+                    }, 
+                    _ => {}
+                }
+            },
             _ => {}
         }
         app.time_entries.key_event(event, &app.current_mode);
@@ -289,13 +308,24 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
-    refresh_projects(client, app);
+    refresh_projects(client, app, false);
 
     app.projects.render(f, chunks[1]);
 
     // Key Event
     if let Some(event) = key {
         app.projects.key_event(event, &app.current_mode);
+        match event.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'r' => {
+                        refresh_projects(client, app, true);
+                    },
+                    _ => {}
+                }
+            }, 
+            _ => {}
+        }
    }
 }
 
@@ -305,19 +335,30 @@ pub fn task_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut A
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     // Ensure that a project is set in the config
-    refresh_projects(client, app);
+    refresh_projects(client, app, false);
     if let Some(project_id) = app.projects.get_selected_item() {
         app.config.project_id = Some(project_id.clone().id());
     } else {
         app.config.project_id = Some(app.projects.items.get(0).unwrap().clone().id()); 
     }
-    refresh_tasks(client, app);
+    refresh_tasks(client, app, false);
     app.tasks.render(f, chunks[1]);
 
     // Key Event
     if let Some(event) = key {
         app.tasks.key_event(event, &app.current_mode);
-   }
+        match event.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'r' => {
+                        refresh_tasks(client, app, true);
+                    },
+                    _ => {}
+                }
+            }, 
+            _ => {}
+        }
+  }
 }
 
 
@@ -326,12 +367,23 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
-    refresh_tags(client, app);
+    refresh_tags(client, app, false);
     app.tags.render(f, chunks[1]);
 
     // Key Event
     if let Some(event) = key {
         app.tags.key_event(event, &app.current_mode);
+        match event.code {
+            KeyCode::Char(c) => {
+                match c {
+                    'r' => {
+                        refresh_tags(client, app, true);
+                    },
+                    _ => {}
+                }
+            }, 
+            _ => {}
+        }
    }
 }
 
