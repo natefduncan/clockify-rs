@@ -170,9 +170,18 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     refresh_tags(client, app);
 
     // Time Entry table
+    let mut title = app.time_entries.title.clone();
+    if !app.time_entries.search_text.is_empty() {
+        title = format!("{}{}", title, app.time_entries.search_text);
+    }
+    let mut items = vec![];
+    if app.time_entries.search_text.is_empty() {
+        items = app.time_entries.items.iter().map(|x| x.clone()).collect(); // FIXME 
+    } else {
+        items = app.time_entries.search(&app.time_entries.search_text); 
+    }
     let table = Table::new(
-        app.time_entries
-        .items
+        items
         .iter()
         .map(|entry| {
             // Project name
@@ -235,7 +244,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
             ]);
         })
     )
-        .block(Block::default().title("Time Entries"))
+        .block(Block::default().title(title))
         .header(Row::new(vec!["Description", "Project", "Task", "Tag(s)", "Start", "End", "Duration"]))
         .widths(&[Constraint::Percentage(20), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16), Constraint::Percentage(16)])
         .highlight_style(Style::default().add_modifier(Modifier::BOLD).add_modifier(Modifier::ITALIC).add_modifier(Modifier::UNDERLINED))
@@ -249,7 +258,6 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
 
     // Key Event
     if let Some(event) = key {
-        app.time_entries.key_event(event, &app.current_mode);
         match event.code {
             KeyCode::Enter => {
                 let time_entry : &TimeEntry = app.time_entries.get_highlighted_item().unwrap();
@@ -272,6 +280,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
             }, 
             _ => {}
         }
+        app.time_entries.key_event(event, &app.current_mode);
     }
 }
 
