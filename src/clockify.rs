@@ -9,7 +9,8 @@ use crate::{
     ui::{
         components::{StatefulList, InputBox, Id},
         Screen
-    }
+    }, 
+    error::Error
 };
 
 use chrono::prelude::*;
@@ -55,7 +56,7 @@ impl AppMode {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct App<'a> {
     pub title: &'a str, 
     pub should_quit: bool,
@@ -69,6 +70,7 @@ pub struct App<'a> {
     pub tags: StatefulList<Tag>, 
     pub description: InputBox, 
     pub time_entries: StatefulList<TimeEntry>,
+    pub error: Option<Error>, 
 }
 
 impl<'a> fmt::Display for App<'a> {
@@ -79,11 +81,11 @@ impl<'a> fmt::Display for App<'a> {
 }
 
 impl<'a> App<'a> {
-    pub fn new(title: &'a str) -> App<'a> {
-        App {
+    pub fn new(title: &'a str) -> Result<App<'a>, Error> {
+        Ok(App {
             title, 
             should_quit: false, 
-            config: confy::load("clockify").unwrap(), 
+            config: confy::load("clockify")?, 
             current_screen: Screen::Home, 
             current_entry_id: None, 
             current_mode: AppMode::Navigation, 
@@ -93,23 +95,24 @@ impl<'a> App<'a> {
             tags: StatefulList::with_items(vec![], String::from("Select a tag: "), true), 
             description: InputBox::from("Edit the time entry description: "), 
             time_entries: StatefulList::with_items(vec![], String::from("Select a time entry: "), false), 
-        }
+            error: None,
+        })
     }
 
-    pub fn get_current_entry(&mut self, client: &Client) -> Option<TimeEntry> {
+    pub fn get_current_entry(&mut self, client: &Client) -> Result<Option<TimeEntry>, Error> {
         if let Some(time_entry_id) = self.current_entry_id.clone() {
-            return client.get(format!("{}/workspaces/{}/time-entries/{}", self.config.base_url, self.config.workspace_id.as_ref().unwrap().clone(), time_entry_id))
-                .header("X-API-KEY", self.config.api_key.as_ref().unwrap().clone())
-                .send().unwrap()
-                .json::<TimeEntry>().ok();
+            return Ok(Some(client.get(format!("{}/workspaces/{}/time-entries/{}", self.config.base_url, self.config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone(), time_entry_id))
+                .header("X-API-KEY", self.config.api_key.as_ref().ok_or(Error::MissingApiKey)?.clone())
+                .send()?
+                .json::<TimeEntry>()?));
         } else {
-            return None;
+            return Ok(None);
         }
     }
 
-    pub fn get_current_entry_with_selections(&mut self, client: &Client) -> TimeEntry {
+    pub fn get_current_entry_with_selections(&mut self, client: &Client) -> Result<TimeEntry, Error> {
         let mut time_entry : TimeEntry; 
-        if let Some(t) = &self.get_current_entry(client) {
+        if let Some(t) = &self.get_current_entry(client)? {
             time_entry = t.clone();
         } else {
             time_entry = TimeEntry::default();
@@ -126,7 +129,7 @@ impl<'a> App<'a> {
         time_entry.tag_ids = Some(self.tags.get_selected_items().iter().map(|tag| tag.id()).collect::<Vec<String>>());
         // Description
         time_entry.description = Some(self.description.text.clone());
-        return time_entry.clone();
+        return Ok(time_entry.clone());
     }
 
     pub fn current_formatted_time(&self) -> String {
@@ -134,9 +137,9 @@ impl<'a> App<'a> {
         format!("{}", utc.format("%Y-%m-%dT%H:%M:%S.000Z"))
     }
 
-    pub fn start_entry(&mut self, client: &Client) {
+    pub fn start_entry(&mut self, client: &Client) -> Result<(), Error> {
         // Send POST new time entry with only start
-        let mut time_entry = self.get_current_entry_with_selections(client);
+        let mut time_entry = self.get_current_entry_with_selections(client)?;
         // Replace start and end times
         time_entry.id = None;
         time_entry.end = None;
@@ -145,25 +148,28 @@ impl<'a> App<'a> {
         time_entry.start = Some(self.current_formatted_time());
         
         // POST request to create
-        let time_entry = TimeEntry::create(time_entry, client, &self.config, None).unwrap();
+        let time_entry = TimeEntry::create(time_entry, client, &self.config, None)?;
         self.current_entry_id = time_entry.id;
+        Ok(())
     }
 
-    pub fn stop_entry(&mut self, client: &Client) {
+    pub fn stop_entry(&mut self, client: &Client) -> Result<(), Error> {
         // Send PATCH with only end
         let mut time_entry = TimeEntry::default(); 
         time_entry.end = Some(self.current_formatted_time());
-        TimeEntry::patch(time_entry, client, &self.config, None).unwrap();
+        TimeEntry::patch(time_entry, client, &self.config, None)?;
+        Ok(())
     }
 
-    pub fn update_entry(&mut self, client: &Client) {
+    pub fn update_entry(&mut self, client: &Client) -> Result<(), Error> {
         // Send PATCH with only end
-        let time_entry = self.get_current_entry_with_selections(client);
+        let time_entry = self.get_current_entry_with_selections(client)?;
         // POST request to create
-        TimeEntry::update(time_entry, client, &self.config, None).unwrap();
+        TimeEntry::update(time_entry, client, &self.config, None)?;
+        Ok(())
     }
 
-    pub fn key_event(&mut self, key: KeyEvent, client: &Client) {
+    pub fn key_event(&mut self, key: KeyEvent, client: &Client) -> Result<(), Error> {
         match key.modifiers {
             KeyModifiers::CONTROL => {
                match key.code {
@@ -200,9 +206,9 @@ impl<'a> App<'a> {
                                 'h' => { self.current_screen = Screen::Home },
                                 'i' => { self.current_mode = AppMode::Edit }, 
                                 '/' => { self.current_mode = AppMode::Search },
-                                'u' => { self.update_entry(client) },
-                                's' => { self.start_entry(client) }, 
-                                'e' => { self.stop_entry(client) },
+                                'u' => { self.update_entry(client)?; },
+                                's' => { self.start_entry(client)?; }, 
+                                'e' => { self.stop_entry(client)?; },
                                _ => {}
                             } 
                         }, 
@@ -219,6 +225,7 @@ impl<'a> App<'a> {
             }
             _ => {}
         }
+        Ok(())
     }
 }
 

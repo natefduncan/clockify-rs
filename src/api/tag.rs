@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::clockify::Config; 
+use crate::{clockify::Config, error::Error}; 
 use crate::api::EndPoint; 
 use serde::{Serialize, Deserialize};
 use crate::ui::components::Id;
@@ -38,7 +38,7 @@ impl Id for Tag {
 }
 
 impl EndPoint for Tag {
-    fn endpoint(config: &Config) -> String {
-        format!("/workspaces/{}/tags", config.workspace_id.as_ref().unwrap().clone())
+    fn endpoint(config: &Config) -> Result<String, Error> {
+        Ok(format!("/workspaces/{}/tags", config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone()))
     }
 }

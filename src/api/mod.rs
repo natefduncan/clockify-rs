@@ -11,7 +11,10 @@ use std::fmt;
 use reqwest::blocking::{Client, RequestBuilder}; 
 
 use serde::Serialize; 
-use crate::clockify::{Config}; 
+use crate::{
+    error::Error,
+    clockify::Config, 
+};
 
 type EndpointParameters = HashMap<String, ParameterValue>;
 
@@ -91,7 +94,7 @@ impl From<reqwest::Error> for EndpointError {
 
 pub trait EndPoint {
 
-    fn endpoint(config: &Config) -> String;
+    fn endpoint(config: &Config) -> Result<String, Error>;
 
     fn add_params(params: EndpointParameters) -> String {
         let mut output = String::new(); 
@@ -101,24 +104,24 @@ pub trait EndPoint {
         output
     }
 
-    fn format_url(id: Option<&str>, params: Option<EndpointParameters>, config: &Config) -> String {
-        let mut url = format!("{}{}", config.base_url, Self::endpoint(config)); 
+    fn format_url(id: Option<&str>, params: Option<EndpointParameters>, config: &Config) -> Result<String, Error> {
+        let mut url = format!("{}{}", config.base_url, Self::endpoint(config)?); 
         if let Some(i) = id {
             url = format!("{}/{}", url, i); 
         }
         if let Some(p) = params {
             url = format!("{}{}", url, Self::add_params(p)); 
         }
-        url
+        Ok(url)
     }
 
     fn set_api_key(request: RequestBuilder, config: &Config) -> RequestBuilder {
         request.header("X-API-KEY", config.api_key.as_ref().unwrap().clone())
     }
 
-    fn create(self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, EndpointError>
+    fn create(self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, Error>
         where Self: Sized + Serialize, for <'de> Self: serde::de::Deserialize<'de> {
-            let url : String = Self::format_url(None, params, config); 
+            let url : String = Self::format_url(None, params, config)?; 
             let request : RequestBuilder = Self::set_api_key(client.post(url), config);
             let response = request
                 .json(&self)
@@ -127,9 +130,9 @@ pub trait EndPoint {
             Ok(response)
     }
 
-    fn patch(data: Self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, EndpointError> 
+    fn patch(data: Self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, Error> 
         where Self: Sized + Serialize, for <'de> Self: serde::de::Deserialize<'de> {
-            let url : String = Self::format_url(None, params, config); 
+            let url : String = Self::format_url(None, params, config)?; 
             let request : RequestBuilder = Self::set_api_key(client.patch(url), config);
             let response = request
                 .json(&data)
@@ -138,9 +141,9 @@ pub trait EndPoint {
             Ok(response)
     }
 
-    fn update(data: Self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, EndpointError> 
+    fn update(data: Self, client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Self, Error> 
         where Self: Sized + Serialize, for <'de> Self: serde::de::Deserialize<'de> {
-            let url : String = Self::format_url(None, params, config); 
+            let url : String = Self::format_url(None, params, config)?; 
             let request : RequestBuilder = Self::set_api_key(client.put(url), config);
             let response = request
                 .json(&data)
@@ -149,9 +152,9 @@ pub trait EndPoint {
             Ok(response)
     }
 
-    fn list(client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Vec<Self>, EndpointError>  
+    fn list(client: &Client, config: &Config, params: Option<EndpointParameters>) -> Result<Vec<Self>, Error>  
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
-        let url : String = Self::format_url(None, params, config); 
+        let url : String = Self::format_url(None, params, config)?; 
         let request : RequestBuilder = Self::set_api_key(client.get(url), config);
         let response = request
             .send()?
@@ -159,9 +162,9 @@ pub trait EndPoint {
         Ok(response)
     }
 
-    fn get(client: &Client, config: &Config, id: &str, params: Option<EndpointParameters>) -> Result<Self, EndpointError>
+    fn get(client: &Client, config: &Config, id: &str, params: Option<EndpointParameters>) -> Result<Self, Error>
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de> {
-        let url : String = Self::format_url(Some(id), params, config); 
+        let url : String = Self::format_url(Some(id), params, config)?; 
         let request : RequestBuilder = Self::set_api_key(client.get(url), config);
         let response = request
             .send()?
@@ -170,9 +173,9 @@ pub trait EndPoint {
 
     }
     
-    fn add(&self, client: &Client, config: &Config) -> Result<(), EndpointError> 
+    fn add(&self, client: &Client, config: &Config) -> Result<(), Error> 
         where Self: Sized, for <'de> Self: serde::de::Deserialize<'de>, Self: Serialize {
-        let url : String = Self::format_url(None, None, config);
+        let url : String = Self::format_url(None, None, config)?;
         let request : RequestBuilder = Self::set_api_key(client.post(url), config);
         let _response = request
             .json(self)

@@ -5,6 +5,7 @@ use crate::api::{
     task::Task,
     common::{Rate, Membership},
 }; 
+use crate::error::Error;
 use crate::ui::components::Id;
 use serde::{Serialize, Deserialize};
 
@@ -82,7 +83,7 @@ impl Id for Project {
 }
 
 impl EndPoint for Project {
-    fn endpoint(config: &Config) -> String {
-        format!("/workspaces/{}/projects", config.workspace_id.as_ref().unwrap().clone())
+    fn endpoint(config: &Config) -> Result<String, Error> {
+        Ok(format!("/workspaces/{}/projects", config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone()))
     }
 }

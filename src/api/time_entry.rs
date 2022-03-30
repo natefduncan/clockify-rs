@@ -5,7 +5,8 @@ use crate::{
     api::{
         EndPoint, 
         tag::Tag,
-    }
+    }, 
+    error::Error, 
 };
 use serde::{Serialize, Deserialize};
 use crate::ui::components::Id;
@@ -75,7 +76,7 @@ impl Id for TimeEntry {
 }
 
 impl EndPoint for TimeEntry {
-    fn endpoint(config: &Config) -> String {
-        format!("/workspaces/{}/user/{}/time-entries", config.workspace_id.as_ref().unwrap().clone(), config.user_id.as_ref().unwrap())
+    fn endpoint(config: &Config) -> Result<String, Error> {
+        Ok(format!("/workspaces/{}/user/{}/time-entries", config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone(), config.user_id.as_ref().ok_or(Error::MissingUser)?))
     }
 }

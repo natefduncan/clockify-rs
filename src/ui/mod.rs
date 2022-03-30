@@ -7,7 +7,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
 }; 
 use std::{
-    error::Error, 
     io, 
     time::{Duration, Instant}
 }; 
@@ -26,7 +25,7 @@ use crate::{
         time_entry::TimeEntry, 
         workspace::Workspace
     },
-    ui::components::{Component, StatefulList},
+    ui::components::{Component, StatefulList}, error::Error
 };
 
 use self::screen::task_selection; 
@@ -42,7 +41,7 @@ pub enum Screen {
     DescriptionEdit, 
 }
 
-pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Box<dyn Error>> {
+pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Error> {
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -62,19 +61,14 @@ pub fn run(app: &mut App, tick_rate: Duration) -> Result<(), Box<dyn Error>> {
         DisableMouseCapture
     )?;
     terminal.show_cursor()?;
-
-    if let Err(err) = res {
-        println!("{:?}", err)
-    }
-
-    Ok(())
+    res
 }
 
-pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mut App, tick_rate: Duration) -> io::Result<()> {
+pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mut App, tick_rate: Duration) -> Result<(), Error> {
     let mut last_tick = Instant::now();
     loop {
         terminal.draw(|f| {
-            match app.current_screen {
+            let res = match app.current_screen {
                 Screen::Home => screen::home(f, client, app, None),
                 Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, None),
                 Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, None),
@@ -82,7 +76,10 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
                 Screen::TaskSelection => screen::task_selection(f, client, app, None),
                 Screen::TagSelection => screen::tag_selection(f, client, app, None), 
                 Screen::DescriptionEdit => screen::description_input(f, client, app, None), 
-               _ => {}
+            };
+            if let Err(e) = res {
+                app.error = Some(e);
+                app.should_quit = true;
             }
         })?;
 
@@ -93,18 +90,22 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
             if let Event::Key(key) = event::read()? {
                 // Screen specific key event
                 terminal.draw(|f| {
-                    match app.current_screen {
+                   let res : Result<(), Error> = match app.current_screen {
                         Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, Some(key)), 
                         Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, Some(key)), 
                         Screen::ProjectSelection => screen::project_selection(f, client, app, Some(key)),
                         Screen::TaskSelection => screen::task_selection(f, client, app, Some(key)),
                         Screen::TagSelection => screen::tag_selection(f, client, app, Some(key)),
                         Screen::DescriptionEdit => screen::description_input(f, client, app, Some(key)), 
-                        _ => {}
-                    }
+                        _ => Ok(())
+                    };
+                   if let Err(e) = res {
+                       app.error = Some(e);
+                       app.should_quit = true;
+                   }
                 })?; 
                 // App key events
-                app.key_event(key, client)
+                app.key_event(key, client)?
             }
         }
         if last_tick.elapsed() >= tick_rate {
