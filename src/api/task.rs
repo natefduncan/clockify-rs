@@ -5,7 +5,7 @@ use crate::{
     api::{
         EndPoint, 
         common::Rate
-    }, ui::components::Id
+    }, ui::components::Id, error::Error
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -45,10 +45,10 @@ impl Id for Task {
 }
 
 impl EndPoint for Task {
-    fn endpoint(config: &Config) -> String {
-        format!("/workspaces/{}/projects/{}/tasks", 
-            config.workspace_id.as_ref().unwrap().clone(),
-            config.project_id.as_ref().unwrap().clone()
-        )   
+    fn endpoint(config: &Config) -> Result<String, Error> {
+        Ok(format!("/workspaces/{}/projects/{}/tasks", 
+            config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone(),
+            config.project_id.as_ref().ok_or(Error::MissingProject)?.clone()
+        ))
     }
 }

@@ -3,7 +3,8 @@ use crate::clockify::Config;
 use crate::api::{
     EndPoint, 
     common::{Rate, Membership}
-}; 
+};
+use crate::error::Error; 
 use serde::{Serialize, Deserialize};
 use crate::ui::components::Id;
 
@@ -79,7 +80,7 @@ impl Id for Workspace {
 }
 
 impl EndPoint for Workspace {
-    fn endpoint(_config: &Config) -> String {
-        format!("/workspaces")
+    fn endpoint(_config: &Config) -> Result<String, Error> {
+        Ok(format!("/workspaces"))
     }
 }

@@ -4,7 +4,7 @@ use crate::{
     api::{
         EndPoint, 
         common::Membership,
-    }
+    }, error::Error
 };
 use serde::{Serialize, Deserialize};
 
@@ -66,7 +66,7 @@ impl fmt::Display for User {
 }
 
 impl EndPoint for User {
-    fn endpoint(config: &Config) -> String {
-        format!("/workspaces/{}/users", config.workspace_id.as_ref().unwrap().clone())
+    fn endpoint(config: &Config) -> Result<String, Error> {
+       Ok(format!("/workspaces/{}/users", config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone()))
     }
 }
