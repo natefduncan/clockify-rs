@@ -18,7 +18,7 @@ struct Args {
 
 fn main() -> Result<(), Error> {
     let args = Args::parse();
-    let mut app = App::new("Clockify");
+    let mut app = App::new("Clockify")?;
     if app.config.api_key.is_none() && args.api_key.is_none() {
         return Err(Error::MissingApiKey);
     } else {
@@ -26,7 +26,10 @@ fn main() -> Result<(), Error> {
             app.config.api_key = args.api_key.clone();
         }
         let tick_rate = Duration::from_millis(150); 
-        run(&mut app, tick_rate).unwrap(); 
+        run(&mut app, tick_rate)?; 
+        if let Some(e) = app.error {
+            println!("{:?}", e);
+        }
         confy::store("clockify", app.config)?;
         return Ok(());
     }
