@@ -84,22 +84,17 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     // Display current time entry
     let current_entry_chunks = Layout::default()
         .constraints([
-            Constraint::Length(1), // Project
+            Constraint::Length(1), // Description
             Constraint::Length(1), // Task
             Constraint::Length(1), // Tag
-            Constraint::Length(1), // Description
+            Constraint::Length(1), // Project
             Constraint::Length(1), // Start
             Constraint::Length(1), // Stop
         ].as_ref())
         .split(chunks[1]);
-    
-    // Project
-    let project: Option<&Project> = app.projects.get_selected_item();
-    let project_text : String = match project {
-        Some(project) => project.name.clone(), 
-        None => String::from("")
-    };
-    f.render_widget(Paragraph::new(format!("{}: {}", "Project", project_text)), current_entry_chunks[0]); 
+    // Description
+    f.render_widget(Paragraph::new(format!("{}: {}", "Description", app.description.text.clone())), current_entry_chunks[0]); 
+
     // Task
     let task: Option<&Task> = app.tasks.get_selected_item();
     let task_text : String = match task {
@@ -112,9 +107,14 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, key: O
     let tag_string = tags.iter().map(|x| x.to_string() + ", ").collect::<String>();
     let tag_string = tag_string.trim_end_matches(", ");
     f.render_widget(Paragraph::new(format!("{}: {}", "Tag", tag_string)), current_entry_chunks[2]); 
-    // Description
-    f.render_widget(Paragraph::new(format!("{}: {}", "Description", app.description.text.clone())), current_entry_chunks[3]); 
-
+    // Project
+    let project: Option<&Project> = app.projects.get_selected_item();
+    let project_text : String = match project {
+        Some(project) => project.name.clone(), 
+        None => String::from("")
+    };
+    f.render_widget(Paragraph::new(format!("{}: {}", "Project", project_text)), current_entry_chunks[3]); 
+    //Time Entries
     if let Some(time_entry_id) = app.current_entry_id.clone() {
         let current_time = client.get(format!("{}/workspaces/{}/time-entries/{}", app.config.base_url, app.config.workspace_id.as_ref().ok_or(Error::MissingWorkspace)?.clone(), time_entry_id))
             .header("X-API-KEY", app.config.api_key.as_ref().ok_or(Error::MissingApiKey)?.clone())

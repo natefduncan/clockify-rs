@@ -6,3 +6,4 @@
 
 ## Bugs
 - Graceful Shutdown on Error (#27)
+- Move Description to top of home (#28)
