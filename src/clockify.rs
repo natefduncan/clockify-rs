@@ -30,29 +30,15 @@ impl fmt::Display for AppMode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             AppMode::Navigation => {
-                write!(f, "{}", "Navigation")
+                write!(f, "Navigation")
             },
             AppMode::Edit => {
-                write!(f, "{}", "Edit")
+                write!(f, "Edit")
             }, 
             AppMode::Search => {
-                write!(f, "{}", "Search")
+                write!(f, "Search")
             }
         }
-    }
-}
-
-impl AppMode {
-    pub fn is_navigation(&self) -> bool {
-        return matches!(&self, AppMode::Navigation);
-    }
-    
-    pub fn is_edit(&self) -> bool {
-        return matches!(&self, AppMode::Edit);
-    }
-
-    pub fn is_search(&self) -> bool {
-        return matches!(&self, AppMode::Search);
     }
 }
 
@@ -106,17 +92,16 @@ impl<'a> App<'a> {
                 .send()?
                 .json::<TimeEntry>()?));
         } else {
-            return Ok(None);
+            Ok(None)
         }
     }
 
     pub fn get_current_entry_with_selections(&mut self, client: &Client) -> Result<TimeEntry, Error> {
-        let mut time_entry : TimeEntry; 
-        if let Some(t) = &self.get_current_entry(client)? {
-            time_entry = t.clone();
+        let mut time_entry : TimeEntry = if let Some(t) = &self.get_current_entry(client)? {
+            t.clone()
         } else {
-            time_entry = TimeEntry::default();
-        }
+            TimeEntry::default()
+        };
         // Project
         if let Some(project) = &self.projects.get_selected_item() {
             time_entry.project_id = Some(project.id());
@@ -129,7 +114,7 @@ impl<'a> App<'a> {
         time_entry.tag_ids = Some(self.tags.get_selected_items().iter().map(|tag| tag.id()).collect::<Vec<String>>());
         // Description
         time_entry.description = Some(self.description.text.clone());
-        return Ok(time_entry.clone());
+        Ok(time_entry)
     }
 
     pub fn current_formatted_time(&self) -> String {
@@ -155,8 +140,7 @@ impl<'a> App<'a> {
 
     pub fn stop_entry(&mut self, client: &Client) -> Result<(), Error> {
         // Send PATCH with only end
-        let mut time_entry = TimeEntry::default(); 
-        time_entry.end = Some(self.current_formatted_time());
+        let time_entry = TimeEntry { end: Some(self.current_formatted_time()), ..Default::default() };
         TimeEntry::patch(time_entry, client, &self.config, None)?;
         Ok(())
     }
@@ -172,20 +156,16 @@ impl<'a> App<'a> {
     pub fn key_event(&mut self, key: KeyEvent, client: &Client) -> Result<(), Error> {
         match key.modifiers {
             KeyModifiers::CONTROL => {
-               match key.code {
-                    KeyCode::Char(c) => {
-                        match c {
-                            'q' => { self.should_quit = true; },
-                            _ => {}
-                        }
-                    }, 
-                    _ => {},
+                if let KeyCode::Char(c) = key.code {
+                    if c== 'q' {
+                        self.should_quit = true;
+                    }
                }
             },
             KeyModifiers::NONE => {
-                if self.current_mode.is_navigation() {
-                    match key.code {
-                        KeyCode::Char(c) => {
+                match self.current_mode {
+                    AppMode::Navigation => {
+                        if let KeyCode::Char(c) = key.code {
                             match c {
                                 'w' => { self.current_screen = Screen::WorkspaceSelection }, 
                                 't' => { self.current_screen = Screen::TimeEntrySelection },
@@ -209,17 +189,14 @@ impl<'a> App<'a> {
                                 'u' => { self.update_entry(client)?; },
                                 's' => { self.start_entry(client)?; }, 
                                 'e' => { self.stop_entry(client)?; },
-                               _ => {}
-                            } 
-                        }, 
-                        _ => {}
-                    } 
-                } else {
-                    match key.code {
-                        KeyCode::Esc => {
+                                _ => {}
+                            }
+                        }
+                    }, 
+                    _ => {
+                        if key.code == KeyCode::Esc {
                             self.current_mode = AppMode::Navigation;
-                        }, 
-                        _ => {}
+                        }
                     }
                 }
             }

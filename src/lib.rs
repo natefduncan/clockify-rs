@@ -1,4 +1,4 @@
-mod clockify; 
-mod api; 
-mod ui; 
-mod error; 
+pub mod clockify; 
+pub mod api; 
+pub mod ui; 
+pub mod error; 

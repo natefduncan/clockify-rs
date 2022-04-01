@@ -6,9 +6,9 @@ pub enum Error {
     MissingTimeEntry,
     MissingProject,
     MissingUser,
-    DataError, 
+    MissingData, 
     MissingApiKey, 
-    EndpointError(crate::api::EndpointError),
+    Api(crate::api::EndpointError),
 }
 
 impl From<reqwest::Error> for Error {
@@ -19,7 +19,7 @@ impl From<reqwest::Error> for Error {
 
 impl From<crate::api::EndpointError> for Error {
     fn from(e: crate::api::EndpointError) -> Error {
-        Error::EndpointError(e)
+        Error::Api(e)
     }
 }
 
