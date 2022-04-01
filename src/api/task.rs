@@ -26,9 +26,7 @@ pub struct Task {
 
 impl From<&str> for Task {
     fn from(s: &str) -> Task {
-        let mut default = Task::default();
-        default.name = s.to_string();
-        default
+        Task { name: s.to_string(), ..Default::default() }
     }
 }
 

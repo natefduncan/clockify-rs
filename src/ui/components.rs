@@ -52,14 +52,8 @@ impl Component for InputBox {
                 }
             },
             AppMode::Navigation => {
-                match key.code {
-                    KeyCode::Char(c) => {
-                        match c {
-                            'c' => { self.text = String::new() }, 
-                            _ => {}
-                        }
-                    }, 
-                    _ => {}
+                if let KeyCode::Char(c) = key.code {
+                    if c == 'c' { self.text = String::new() }
                 }
             }, 
             _ => {}
@@ -127,7 +121,7 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         Self::filter_by_matches(&self.items, &matches)
     }
 
-    fn find_matches(query: String, vector: &Vec<String>) -> Vec<usize> {
+    fn find_matches(query: String, vector: &[String]) -> Vec<usize> {
         let patterns = query.split_whitespace();
         let ac = AhoCorasickBuilder::new()
             .ascii_case_insensitive(true)
@@ -135,15 +129,11 @@ impl<T: Display + Id + Clone> StatefulList<T> {
         vector
             .iter()
             .map(|string| {
-                let matches = ac
-                    .find_iter(string)
-                    .map(|m| m.pattern())
-                    .collect::<Vec<usize>>();
-                matches.len()
+                ac.find_iter(string).count()
             }).collect::<Vec<usize>>()
     }
 
-    fn filter_by_matches(filter_vec: &Vec<T>, match_vec: &Vec<usize>) -> Vec<T> {
+    fn filter_by_matches(filter_vec: &[T], match_vec: &[usize]) -> Vec<T> {
         let zip = filter_vec.iter().zip(match_vec.iter());
         let mut matches: Vec<Match<T>> = zip
             .map(|(x,m)| Match {
@@ -164,10 +154,6 @@ impl<T: Display + Id + Clone> StatefulList<T> {
 
     pub fn get_by_id(&self, id: String) -> Option<&T> {
         return self.items.iter().find(|x| x.id() == id);
-    }
-
-    pub fn get_by_string(&self, string: String) -> Option<&T> {
-        return self.items.iter().find(|x| x.to_string() == string);
     }
 
     pub fn toggle_highlighted(&mut self) {
@@ -215,12 +201,11 @@ impl<T: Display + Id + Clone> StatefulList<T> {
     pub fn get_highlighted_item(&self) -> Option<&T> {
         match self.state.selected() {
             Some(x) => {
-                let mut items = vec![];
-                if self.search_text.is_empty() {
-                    items = self.items.to_vec(); // FIXME
+                let items : Vec<T> = if self.search_text.is_empty() {
+                    self.items.to_vec()
                 } else {
-                    items = self.search(&self.search_text);
-                }
+                    self.search(&self.search_text)
+                };
                 let highlighted_item = items.get(x).unwrap();
                 return self.items.iter().find(|x| x.id() == highlighted_item.id());
             }, 
@@ -255,12 +240,11 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
             title = format!("{}{}", title, self.search_text);
         }
         f.render_widget(Paragraph::new(title), chunks[0]); 
-        let mut items = vec![];
-        if self.search_text.is_empty() {
-            items = self.items.to_vec(); // FIXME
+        let items : Vec<T> = if self.search_text.is_empty() {
+            self.items.to_vec()
         } else {
-            items = self.search(&self.search_text);
-        }
+            self.search(&self.search_text)
+        };
         let list_item : Vec<ListItem> = items.iter()
             .map(|i| {
                 if self.selected.contains(&i.id()) {

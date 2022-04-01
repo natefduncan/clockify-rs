@@ -64,9 +64,7 @@ pub struct CustomField {
 
 impl From<&str> for Project {
     fn from(s: &str) -> Project {
-        let mut default = Project::default();
-        default.name = s.to_string();
-        default
+        Project { name: s.to_string(), ..Default::default() }
     }
 }
 

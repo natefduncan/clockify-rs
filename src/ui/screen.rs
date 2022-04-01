@@ -121,9 +121,9 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _key: 
             .send()?
             .json::<TimeEntry>()?;
         // Start
-        f.render_widget(Paragraph::new(format!("{}: {}", "Start: ", current_time.time_interval.clone().ok_or(Error::DataError)?.start.ok_or(Error::DataError)?)), current_entry_chunks[4]); 
+        f.render_widget(Paragraph::new(format!("{}: {}", "Start: ", current_time.time_interval.clone().ok_or(Error::MissingData)?.start.ok_or(Error::MissingData)?)), current_entry_chunks[4]); 
         // End
-        let end : Option<String> = current_time.time_interval.ok_or(Error::DataError)?.end;
+        let end : Option<String> = current_time.time_interval.ok_or(Error::MissingData)?.end;
         if let Some(e) = end {
             f.render_widget(Paragraph::new(format!("{}: {}", "End: ", e)), current_entry_chunks[5]); 
         }
@@ -161,11 +161,8 @@ pub fn workspace_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &
                 app.config.workspace_id = app.workspaces.get_selected_item().ok_or(Error::MissingWorkspace)?.id.clone();
             }, 
             KeyCode::Char(c) => {
-                match c {
-                    'r' => {
+                if c == 'r' {
                         refresh_workspaces(client, app, true)?;
-                    }, 
-                    _ => {}
                 }
             }, 
            _ => {}
@@ -191,12 +188,11 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
     if !app.time_entries.search_text.is_empty() {
         title = format!("{}{}", title, app.time_entries.search_text);
     }
-    let mut items = vec![];
-    if app.time_entries.search_text.is_empty() {
-        items = app.time_entries.items.to_vec(); // FIXME 
+    let items : Vec<TimeEntry> = if app.time_entries.search_text.is_empty() {
+        app.time_entries.items.to_vec()
     } else {
-        items = app.time_entries.search(&app.time_entries.search_text); 
-    }
+        app.time_entries.search(&app.time_entries.search_text)
+    }; 
     let table = Table::new(
         items
         .iter()
@@ -287,7 +283,7 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
                     app.tags.selected = tag_ids.clone();
                 }
                 // Change description
-                app.description.text = time_entry.description.clone().ok_or(Error::DataError)?;
+                app.description.text = time_entry.description.clone().ok_or(Error::MissingData)?;
                 
                 // Change current_entry_id
                 app.current_entry_id = time_entry.id.clone();
@@ -296,14 +292,11 @@ pub fn time_entry_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: 
                 app.current_screen = Screen::Home;
             }, 
             KeyCode::Char(c) => {
-                match c {
-                    'r' => {
-                        refresh_time_entries(client, app, true)?;
-                        refresh_workspaces(client, app, true)?;
-                        refresh_projects(client, app, true)?;
-                        refresh_tags(client, app, true)?;
-                    }, 
-                    _ => {}
+                if c == 'r' {
+                    refresh_time_entries(client, app, true)?;
+                    refresh_workspaces(client, app, true)?;
+                    refresh_projects(client, app, true)?;
+                    refresh_tags(client, app, true)?;
                 }
             },
             _ => {}
@@ -325,17 +318,11 @@ pub fn project_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     // Key Event
     if let Some(event) = key {
         app.projects.key_event(event, &app.current_mode);
-        match event.code {
-            KeyCode::Char(c) => {
-                match c {
-                    'r' => {
-                        refresh_projects(client, app, true)?;
-                    },
-                    _ => {}
-                }
-            }, 
-            _ => {}
-        }
+        if let KeyCode::Char(c) = event.code {
+            if c == 'r' {
+                refresh_projects(client, app, true)?;
+            }
+       }
    }
     Ok(())
 }
@@ -350,7 +337,7 @@ pub fn task_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut A
     if let Some(project_id) = app.projects.get_selected_item() {
         app.config.project_id = Some(project_id.clone().id());
     } else {
-        app.config.project_id = Some(app.projects.items.get(0).ok_or(Error::DataError)?.clone().id());
+        app.config.project_id = Some(app.projects.items.get(0).ok_or(Error::MissingData)?.clone().id());
     }
     refresh_tasks(client, app, false)?;
     app.tasks.render(f, chunks[1]);
@@ -358,18 +345,12 @@ pub fn task_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut A
     // Key Event
     if let Some(event) = key {
         app.tasks.key_event(event, &app.current_mode);
-        match event.code {
-            KeyCode::Char(c) => {
-                match c {
-                    'r' => {
-                        refresh_tasks(client, app, true)?;
-                    },
-                    _ => {}
-                }
-            }, 
-            _ => {}
-        }
-  }
+        if let KeyCode::Char(c) = event.code {
+            if c == 'r' {
+                refresh_tasks(client, app, true)?;
+            }
+       }
+    }
     Ok(())
 }
 
@@ -385,16 +366,10 @@ pub fn tag_selection<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut Ap
     // Key Event
     if let Some(event) = key {
         app.tags.key_event(event, &app.current_mode);
-        match event.code {
-            KeyCode::Char(c) => {
-                match c {
-                    'r' => {
-                        refresh_tags(client, app, true)?;
-                    },
-                    _ => {}
-                }
-            }, 
-            _ => {}
+        if let KeyCode::Char(c) = event.code {
+            if c == 'r' {
+                refresh_tags(client, app, true)?;
+            }
         }
    }
     Ok(())
@@ -412,10 +387,7 @@ pub fn description_input<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mu
     // Key Event
     if let Some(event) = key {
         app.description.key_event(event, &app.current_mode); 
-        match event.code {
-            KeyCode::Enter => { app.current_screen = Screen::Home },
-            _ => {}
-        }
+        if event.code == KeyCode::Enter { app.current_screen = Screen::Home }
     }
     Ok(())
     

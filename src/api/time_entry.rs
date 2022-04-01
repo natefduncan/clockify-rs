@@ -1,4 +1,3 @@
-use reqwest::blocking::Client; 
 use std::fmt;
 use crate::{
     clockify::Config, 
@@ -46,16 +45,6 @@ pub struct CustomFieldValue {
     pub value: String, 
     pub name: String, 
     pub r#type: String
-}
-
-impl TimeEntry {
-    pub fn start(&self, _client: &Client, _config: &Config) {
-        // TODO: Implement 
-    }
-
-    pub fn end(&self, _client: &Client, _config: &Config) {
-        // TODO: Implement
-    }
 }
 
 impl fmt::Display for TimeEntry {
