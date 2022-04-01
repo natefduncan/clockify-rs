@@ -25,6 +25,7 @@ use crate::{
 
 #[derive(Debug, Clone)]
 pub enum Screen {
+    Loading, 
     Home,
     WorkspaceSelection, 
     TimeEntrySelection, 
@@ -62,6 +63,7 @@ pub fn run_app<B: Backend>(terminal: &mut Terminal<B>, client: &Client, app: &mu
     loop {
         terminal.draw(|f| {
             let res = match app.current_screen {
+                Screen::Loading => screen::loading(f, client, app, None), 
                 Screen::Home => screen::home(f, client, app, None),
                 Screen::WorkspaceSelection => screen::workspace_selection(f, client, app, None),
                 Screen::TimeEntrySelection => screen::time_entry_selection(f, client, app, None),

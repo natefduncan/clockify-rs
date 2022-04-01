@@ -16,7 +16,7 @@ use crate::{
     clockify::Config, 
 };
 
-type EndpointParameters = HashMap<String, ParameterValue>;
+pub type EndpointParameters = HashMap<String, ParameterValue>;
 
 #[derive(Debug, Clone)]
 pub enum ParameterValue {
@@ -98,8 +98,12 @@ pub trait EndPoint {
 
     fn add_params(params: EndpointParameters) -> String {
         let mut output = String::new(); 
-        for (key, value) in params.into_iter() {
-            output = format!("&{}={}", key, value); 
+        for (i, (key, value)) in params.into_iter().enumerate() {
+            if i == 0 {
+                output = format!("?{}={}", key, value);
+            } else {
+                output = format!("&{}={}", key, value); 
+            }
         }
         output
     }

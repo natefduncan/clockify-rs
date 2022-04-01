@@ -72,7 +72,7 @@ impl<'a> App<'a> {
             title, 
             should_quit: false, 
             config: confy::load("clockify")?, 
-            current_screen: Screen::Home, 
+            current_screen: Screen::Loading, 
             current_entry_id: None, 
             current_mode: AppMode::Navigation, 
             workspaces: StatefulList::with_items(vec![], String::from("Select a workspace: "), false), 

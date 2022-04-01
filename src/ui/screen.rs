@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::error::Error;
 
 use crossterm::{
@@ -17,7 +19,9 @@ use crate::{
         EndPoint,
         user::User, 
         time_entry::TimeEntry, 
-        workspace::Workspace, project::Project, tag::Tag, task::Task
+        workspace::Workspace, project::Project, tag::Tag, task::Task, 
+        EndpointParameters,
+        ParameterValue,
     }, 
     ui::{
         components::{StatefulList, Component, Id}, 
@@ -75,8 +79,52 @@ fn refresh_time_entries(client: &Client, app: &mut App, force: bool) -> Result<(
     Ok(())
 }
 
+// Loading
+pub fn loading<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _key: Option<KeyEvent>) -> Result<(), Error> {
+    let chunks = template_screen(f, client, app);
+    f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
+    f.render_widget(Paragraph::new("Loading Data"), chunks[1]);
+    refresh_time_entries(client, app, true)?;
+    refresh_tags(client, app, true)?;
+    refresh_tasks(client, app, true)?;
+    refresh_projects(client, app, true)?;
+    refresh_workspaces(client, app, true)?;
+    if app.config.workspace_id.is_none() {
+        app.current_screen = Screen::WorkspaceSelection;
+    } else {
+        app.current_screen = Screen::Home;
+    }
+    Ok(())
+}
+
 // Home
 pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _key: Option<KeyEvent>) -> Result<(), Error>{
+    // Check if there is a currently running entry
+    if app.current_entry_id.is_none() {
+        // Only get first record from list
+        let mut params : EndpointParameters = HashMap::new();
+        params.insert("page-size".to_owned(), ParameterValue::from(1)); 
+        let time_entries : Vec<TimeEntry> = TimeEntry::list(client, &app.config, Some(params))?;
+        if let Some(time_entry) = time_entries.get(0) {
+            // End
+            let end : Option<String> = time_entry.clone().time_interval.ok_or(Error::MissingData)?.end;
+            if end.is_none() {
+                // Change current project
+                app.current_entry_id = Some(time_entry.id());
+                // Change project
+                if let Some(project_id) = &time_entry.project_id {
+                    app.projects.selected = vec![project_id.clone()];
+                }
+                // Change tags
+                if let Some(tag_ids) = &time_entry.tag_ids {
+                    app.tags.selected = tag_ids.clone();
+                }
+                // Change description
+                app.description.text = time_entry.description.clone().ok_or(Error::MissingData)?;
+            }
+        }
+    }
+
     // App Title
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
