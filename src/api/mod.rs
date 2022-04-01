@@ -34,15 +34,15 @@ impl fmt::Display for ParameterValue {
             ParameterValue::Boolean(b) => {
                 match b {
                     true => {
-                        write!(f, "{}", "true")
+                        write!(f, "true")
                     },
                     _ => {
-                        write!(f, "{}", "false")
+                        write!(f, "false")
                     }
                 }
             }, 
             ParameterValue::Integer(i) => {
-                write!(f, "{}", i.to_string())
+                write!(f, "{}", i)
             }
         }
     }
@@ -99,7 +99,7 @@ pub trait EndPoint {
     fn add_params(params: EndpointParameters) -> String {
         let mut output = String::new(); 
         for (key, value) in params.into_iter() {
-            output = format!("&{}={}", key, value.to_string()); 
+            output = format!("&{}={}", key, value); 
         }
         output
     }

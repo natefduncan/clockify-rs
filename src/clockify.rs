@@ -30,13 +30,13 @@ impl fmt::Display for AppMode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             AppMode::Navigation => {
-                write!(f, "{}", "Navigation")
+                write!(f, "Navigation")
             },
             AppMode::Edit => {
-                write!(f, "{}", "Edit")
+                write!(f, "Edit")
             }, 
             AppMode::Search => {
-                write!(f, "{}", "Search")
+                write!(f, "Search")
             }
         }
     }
@@ -106,7 +106,7 @@ impl<'a> App<'a> {
                 .send()?
                 .json::<TimeEntry>()?));
         } else {
-            return Ok(None);
+            Ok(None)
         }
     }
 
@@ -129,7 +129,7 @@ impl<'a> App<'a> {
         time_entry.tag_ids = Some(self.tags.get_selected_items().iter().map(|tag| tag.id()).collect::<Vec<String>>());
         // Description
         time_entry.description = Some(self.description.text.clone());
-        return Ok(time_entry.clone());
+        Ok(time_entry)
     }
 
     pub fn current_formatted_time(&self) -> String {

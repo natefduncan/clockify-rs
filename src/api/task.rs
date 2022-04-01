@@ -40,7 +40,7 @@ impl fmt::Display for Task {
 
 impl Id for Task {
     fn id(&self) -> String {
-        return self.id.clone();
+        self.id.clone()
     }
 }
 

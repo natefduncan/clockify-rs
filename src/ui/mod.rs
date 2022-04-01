@@ -2,7 +2,7 @@ pub mod components;
 pub mod screen;
 
 use crossterm::{
-    event::{self, KeyCode, KeyEvent, EnableMouseCapture, Event, DisableMouseCapture}, 
+    event::{self, EnableMouseCapture, Event, DisableMouseCapture}, 
     execute, 
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen}
 }; 
@@ -12,23 +12,15 @@ use std::{
 }; 
 use tui::{
     backend::{Backend, CrosstermBackend}, 
-    Terminal, 
-    layout::{Layout, Constraint},
-    widgets::Paragraph, 
-    Frame,
+    Terminal,
 }; 
 use reqwest::blocking::Client; 
 use crate::{
-    clockify::App, 
-    api::{
-        EndPoint,
-        time_entry::TimeEntry, 
-        workspace::Workspace
-    },
-    ui::components::{Component, StatefulList}, error::Error
+    clockify::App,
+    ui::components::{Component}, error::Error
 };
 
-use self::screen::task_selection; 
+ 
 
 #[derive(Debug, Clone)]
 pub enum Screen {

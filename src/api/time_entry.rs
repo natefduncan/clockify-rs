@@ -3,8 +3,7 @@ use std::fmt;
 use crate::{
     clockify::Config, 
     api::{
-        EndPoint, 
-        tag::Tag,
+        EndPoint,
     }, 
     error::Error, 
 };
@@ -64,7 +63,7 @@ impl fmt::Display for TimeEntry {
         if let Some(d) = &self.description {
             write!(f, "{}", d)
         } else {
-            write!(f, "{}", "No Description") 
+            write!(f, "No Description") 
         }
     }
 }

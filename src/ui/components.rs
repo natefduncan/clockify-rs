@@ -123,8 +123,8 @@ impl<T: Display + Id + Clone> StatefulList<T> {
             .map(|x| x.to_string())
             .collect::<Vec<String>>();
         let matches = Self::find_matches(query.to_owned(), &vec_string);
-        let filtered = Self::filter_by_matches(&self.items, &matches);
-        return filtered;
+        
+        Self::filter_by_matches(&self.items, &matches)
     }
 
     fn find_matches(query: String, vector: &Vec<String>) -> Vec<usize> {
@@ -172,11 +172,11 @@ impl<T: Display + Id + Clone> StatefulList<T> {
 
     pub fn toggle_highlighted(&mut self) {
         let highlighted_item : Option<T> = self.get_highlighted_item().cloned();
-        if let Some(item) = highlighted_item.clone() {
+        if let Some(item) = highlighted_item {
             if let Some(idx) = self.selected.iter().position(|x| *x == item.id()) {
                 self.selected.remove(idx);
             } else {
-                if !self.multiselect && self.selected.len() > 0 {
+                if !self.multiselect && !self.selected.is_empty() {
                     self.selected = vec![]; 
                 }
                 self.selected.push(item.id()); 
@@ -217,7 +217,7 @@ impl<T: Display + Id + Clone> StatefulList<T> {
             Some(x) => {
                 let mut items = vec![];
                 if self.search_text.is_empty() {
-                    items = self.items.iter().map(|x| x.clone()).collect(); // FIXME
+                    items = self.items.to_vec(); // FIXME
                 } else {
                     items = self.search(&self.search_text);
                 }
@@ -257,7 +257,7 @@ impl<T: Display + Id + Clone> Component for StatefulList<T> {
         f.render_widget(Paragraph::new(title), chunks[0]); 
         let mut items = vec![];
         if self.search_text.is_empty() {
-            items = self.items.iter().map(|x| x.clone()).collect(); // FIXME
+            items = self.items.to_vec(); // FIXME
         } else {
             items = self.search(&self.search_text);
         }

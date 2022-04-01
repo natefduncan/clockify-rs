@@ -81,6 +81,6 @@ impl Id for Workspace {
 
 impl EndPoint for Workspace {
     fn endpoint(_config: &Config) -> Result<String, Error> {
-        Ok(format!("/workspaces"))
+        Ok("/workspaces".to_string())
     }
 }
