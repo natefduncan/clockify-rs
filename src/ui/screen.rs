@@ -84,10 +84,19 @@ pub fn loading<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _ke
     let chunks = template_screen(f, client, app);
     f.render_widget(Paragraph::new(app.to_string()), chunks[0]);
     f.render_widget(Paragraph::new("Loading Data"), chunks[1]);
-    refresh_time_entries(client, app, true)?;
-    refresh_tags(client, app, true)?;
-    refresh_tasks(client, app, true)?;
-    refresh_projects(client, app, true)?;
+    if app.config.workspace_id.is_some() {
+        refresh_tags(client, app, true)?;
+        refresh_projects(client, app, true)?;
+    }
+
+    if app.config.project_id.is_some() {
+        refresh_tasks(client, app, true)?;
+    }
+    // Set Current User
+
+    if app.config.user_id.is_some() {
+        refresh_time_entries(client, app, true)?;
+    }
     refresh_workspaces(client, app, true)?;
     if app.config.workspace_id.is_none() {
         app.current_screen = Screen::WorkspaceSelection;
@@ -99,6 +108,20 @@ pub fn loading<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _ke
 
 // Home
 pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _key: Option<KeyEvent>) -> Result<(), Error>{
+     // Force workspace selection
+    if app.config.workspace_id.is_none() {
+        app.current_screen = Screen::WorkspaceSelection;
+        return Ok(())
+    }
+    // If no user_id, send request
+    if app.config.user_id.is_none() {
+        let current_user = client.get(format!("{}{}", app.config.base_url, "/user"))
+            .header("X-API-KEY", app.config.api_key.as_ref().ok_or(Error::MissingApiKey)?.clone())
+            .send()?
+            .json::<User>()?;
+        app.config.user_id = current_user.id;
+    }
+
     // Check if there is a currently running entry
     if app.current_entry_id.is_none() {
         // Only get first record from list
@@ -177,20 +200,7 @@ pub fn home<B: Backend>(f: &mut Frame<B>, client: &Client, app: &mut App, _key: 
         }
     }
 
-    // If no user_id, send request
-    if app.config.user_id.is_none() {
-        let current_user = client.get(format!("{}{}", app.config.base_url, "/user"))
-            .header("X-API-KEY", app.config.api_key.as_ref().ok_or(Error::MissingApiKey)?.clone())
-            .send()?
-            .json::<User>()?;
-        app.config.user_id = current_user.id;
-    }
-
-    // Force workspace selection
-    if app.config.workspace_id.is_none() {
-        app.current_screen = Screen::WorkspaceSelection;
-    }
-    Ok(())
+   Ok(())
 }
 
 // Workspace selection
